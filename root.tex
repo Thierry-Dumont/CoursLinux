@@ -1,0 +1,78 @@
+\section{Deux manières d'acquérir des pouvoirs exceptionnels}
+Comme on l'a vu, les utilisateurs \og standard\fg{} n'ont pas tous les
+pouvoirs\footnote{Entre autres, ils n'ont pas accès à certains
+  fichiers ou répertoires, ou bien des accès restreints (lecture seule
+  par exemple).}, mais il est nécessaire ne serait-ce que pour administrer la
+machine (ce qui inclut par exemple les mises à jour) d'acquérir des
+pouvoirs exceptionnels.
+
+Les distributions Linux actuelles proposent deux méthodes:
+
+\begin{itemize}
+\item \emph{Le superutilisateur:}
+C'est un utilisateur de  nom  \textsf{root}. Il a, par définition, tous les
+droits. Donc, il est dangereux d'être ``root''\footnote{ne jamais être
+  root en état d'ivresse.}.
+\item \emph{La commande \ttt{sudo}:}
+  elle permet d'exécuter une commande en étant root, le temps que dure
+  la commande: 
+
+  \com{sudo rm quelque-chose}
+
+  par exemple.
+\end{itemize}
+
+L'idée, avec \ttt{sudo} est de ne donner que temporairement les
+privilèges de root, en contrôlant le plus possible ce qui est fait, car:
+\begin{itemize}
+  \item Il faut avoir le droit de faire ``sudo''; pour cela il faut
+    être membre du \emph{groupe sudo:}
+
+    \com{grep sudo /etc/group}
+
+    pour voir ça.
+
+  \item Il faut donner son propre mot de passe.
+
+  \item Le mot de passe vous donne le bien droit de faire ``sudo'', mais ce
+    droit est limité dans le temps
+\end{itemize}
+
+Regardez ce que donnent:
+
+\com{whoami}
+
+et
+
+\com{sudo whoami}
+    
+
+Évidemment, la sécurité de ``sudo'' est assez illusoire.
+
+L'utilisateur ``root `` est toujours présent: les
+utilisateurs d'Ubuntu --par exemple-- pourront le vérifier en regardant
+le fichier  \ttt{/etc/shadow}\footnote{\com{sudo grep root
+    /etc/shadow}, bien sûr!} où un
+``!'' désactive la possibilité de se connecter.
+
+En fait, c'est assez dépendant des distributions Linux. Sous les
+debian, sudo n'est pas installé par défaut, et root est
+un utilisateur comme les autres, avec un mot de passe. Sous Ubuntu on
+installe sudo par défaut, mais il suffit de donner un 
+mot de passe\footnote{Question: comment faire? La commande pour changer
+  \emph{votre} mot de passe est \com{passwd}. Pour changer ou définir
+  celui de \ttt{root}, il faut... être \ttt{root}.} à l'utilisateur root pour pouvoir aussi se connecter en tant
+que root (depuis l'écran de connexion par exemple).
+
+Notez enfin que \com{sudo -i}, c'est exactement comme s'être connecté en
+tant que root.
+
+Quelques avantages de sudo:
+\begin{itemize}
+\item On contrôle (via le groupe sudo) qui peut acquérir les
+  privilèges de  ``root''.
+\item Il faut déjà être connecté pour pouvoir faire sudo.
+\item On peut configurer assez finement ce qui est autorisé pour les
+  utilisateurs qui peuvent faire sudo (voir les fichiers et
+  répertoires dont le nom commence par sudo dans \ttt{/etc}).
+\end{itemize}

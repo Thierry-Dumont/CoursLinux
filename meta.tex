@@ -1,0 +1,166 @@
+\section{Noms de fichiers, méta-caractères, et expressions régulières}
+Un exemple (à tester) pour commencer:
+
+\com{ls /var/log}
+
+\noindent on voit qu'il y a  plein de fichiers dont le nom se termine par
+\ttt{log} (par exemple \ttt{boot.log}). Comment ne lister que ceux ci?
+
+Pour cela, on utilise le méta-caractère
+``*'':
+
+\com{ls /var/log/*.log}
+
+et on ne voit qu'eux.
+
+\underline{Explication}: ``*'' correspond à n'importe quelle chaîne de caractères
+(formée de caractères alphabétiques, numériques et autres).
+La commande \com{ls /var/log/*.log} va donc lister tous les fichiers
+de \ttt{/var/log} dont le nom commence par n'importe quelle chaîne de
+caractère, mais finit par \ttt{.log}.
+
+Quelques autres exemples d'utilisation du jocker ``*'':
+\begin{itemize}
+\item On peut lister
+tous les fichiers dont le nom commence par exemple par \ttt{syslog}:
+
+\com{ls /var/log/syslog*}
+
+\item On voit que certains fichiers dont le nom commence par
+  \ttt{syslog} sont compressés (extension
+  \ttt{.gz}).
+
+  Pour ne lister qu'eux, je peux faire:
+
+\com{ls /var/log/syslog*gz} ou dans notre cas \com{ls /var/log/syslog.*.gz}.
+\end{itemize}\smallskip
+
+
+\begin{center}
+  \begin{minipage}{0.75\linewidth}
+    \begin{itemize}
+    \item \emph{Le méta-caractère ``*'' correspond à n'importe quelle
+  chaîne de caractères, de longueur quelconque.} 
+    \item \emph{Le méta-caractère ``?'', lui, correspond à un
+        seul caractère, quelconque.}
+    \end{itemize}
+\end{minipage}
+\end{center}
+\underline{Exemple} (tester):
+
+
+\com{ls /var/log/syslog.?.gz}
+
+ou bien
+
+\com{ls /var/log/syslog???gz}
+
+dans ce cas, les 3 caractères ``matchés'' par \ttt{???} peuvent être
+chacun quelconques et différents.
+
+\paragraph{D'autres manières de filtrer:}
+\begin{itemize}
+\item Supposons que je veuille filtrer sur un seul caractère, numérique. Je
+définis alors un intervalle de recherche \ttt{[0-9]}, puis:
+
+\com{ls /var/log/syslog.[0-9].gz}
+
+\item Si je veux filtrer sur les noms qui commencent par \ttt{a},
+  \ttt{b} ou \ttt{c}, je peux 
+faire:
+
+\com{ls /var/log/[a-c]*}
+
+\item Évidemment on peut tout mixer:
+
+\com{ls /var/log/[a-c]*.[0-9].gz}
+
+et aussi être plus restrictif:
+
+\com{ls /var/log/[a-c]*.[1-3].gz}
+\end{itemize}
+
+Attention: l'ordre des caractères alphabétiques est
+\texttt{ABC....Zabc...z} et par 
+conséquent \ttt{[a-B]} est un intervalle vide. En revanche \ttt{[A-z]}
+est l'ensemble de tous les caractères alphabétiques\footnote{C'est
+  vrai tant qu'on se cantonne à l'utilisation des caractères ASCII;
+  aujourd'hui on peut représenter \og tous\fg{} les caractères (Unicode).}. 
+
+
+  On peut évidemment utiliser cette technique avec à peu près toutes les
+  commandes.
+  Exemples:
+
+  \com{rm *.log}
+
+  \com{mv toto.* /tmp}\footnote{\ttt{mv}: déplace, mais aussi renomme.}
+
+  \begin{center}
+    \begin{boxedminipage}{0.75\linewidth}
+   Ceci n'est qu'une infime introduction à un monde qu'il serait bon de
+  connaître pour traiter des chaînes de caractères: \emph{les
+    expressions régulières}.
+    \end{boxedminipage}
+  \end{center}
+
+
+  Mais comment est-ce que ça marche? Il faut en dire un peu plus sur
+  le mécanisme du shell. Que se passe-t-il quand on tape une commande?
+  Réponse: la commande est interprétée par le shell:
+
+  \begin{enumerate}
+    \item Ce qu'on tape est une chaîne de caractères (se terminant par
+      le caractère ``retour chariot'').
+    \item Le shell (bash ou autre) analyse cette chaîne. Il peut y
+      avoir des erreurs lexicographiques (emploi de caractères pas
+      reconnus) ou syntaxiques.
+
+      Essayez par exemple:
+
+      \com{\&ls}
+    \item Le shell extrait le premier mot de la ligne, considérant que
+      ce mot se termine au premier caractère ``espace'', et considère
+      que c'est une commande. Il cherche alors cette
+      commande\footnote{On va voir plus loin où il cherche.}; s'il ne
+      la trouve pas, il vous le dit, sinon il lance la commande en
+      lui passant le reste de la ligne comme \emph{argument}. Exemple:
+      
+      \com{ls -l /tmp}
+
+      la 
+      commande \ttt{ls} reçoit ``\ttt{-l /tmp}''\footnote{Notons que les
+        espaces en trop sont supprimés: plusieurs espaces successifs se
+        comportent comme un  seul.}.
+    \item Mais si la ligne de commande contient une expression régulière,
+      celle-ci est évaluée et la chaîne résultante est  passée à la
+      commande: par  exemple,  si dans mon répertoire 
+      courant il existe les 
+      fichiers \ttt{toto.txt} et \ttt{toto.pdf}, la commande
+
+      \com{ls -l toto.*}
+
+      est évaluée en:
+
+      \com{ls -l toto.pdf toto.txt}
+
+      et
+      c'est la chaîne de caractères ``\ttt {-l toto.pdf toto.txt}'' qui
+      est passée à \ttt{ls}.
+    \item Là s'arrête le travail du shell proprement dit: il passe la
+      main à la commande  \ttt{ls}, créant ainsi un
+        processus dont il est le père, et dont il garde le contrôle; \ttt{ls}
+      analyse cette ligne: 
+      est elle \emph{bien formée?} (la syntaxe des options est-elle
+      correcte, etc.): le processus \ttt{ls} va faire ce qu'il a à faire, et
+      finalement renvoyer au shell un message ``tout s'est bien passé'',
+      ou bien un message d'erreur, et le shell reprend
+      complètement la main, et attend de vous une autre commande.
+
+
+      Derrière tout ça il y a la notion importante,
+      mais hors de l'horizon de ce cours, de \emph{grammaire formelle}
+      et d'\emph{analyse syntaxique}. Le shell est un interpréteur de
+      commande sophistiqué qui permet d'écrire des programmes dans un
+      langage bien défini, qui suis une \emph{grammaire} bien précise.
+   \end{enumerate} 

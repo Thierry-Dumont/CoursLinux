@@ -1,0 +1,51 @@
+\documentclass[10pt]{smfart}
+
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[a4paper]{geometry}
+\usepackage{graphicx,caption}
+\usepackage{xcolor,lmodern,footmisc,boxedminipage}
+\usepackage[linktocpage=true]{hyperref}
+\usepackage{microtype}
+
+\title{Unix au temps du couvre-feu (3)\\Compléments et exercices}
+\author{Thierry Dumont}
+
+%\definecolor{byzantine}{rgb}{0.5, 0.0, 1.0}
+%\newcommand{\com}[1]{\textcolor{byzantine}{\texttt{#1}}}
+%\newcommand{\comc}[2]{\textcolor{byzantine}{\texttt{#1}
+%
+\newcommand{\com}[1]{\texttt{cmd>#1}}
+\newcommand{\comc}[2]{\texttt{>#1} \underline{#2}}
+\newcommand{\exo}{\textbf{\underline{Exercice}:~}}
+\newcommand{\exos}{\textbf{\underline{Exercices}:}}
+\newcommand{\exx}[1]{\underline{\textbf{#1}}}
+\newcommand{\ttt}[1]{\texttt{#1}}
+%
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\rmq}[1]{{\bfseries\underline{Remarques}:}\\#1}
+\newcommand{\dx}[3]{
+  \begin{boxedminipage}{0.4\linewidth}
+    \begin{center}
+      \textsf{Commande}
+    \end{center}
+    #1\end{boxedminipage}~$ \Rightarrow $
+    \begin{boxedminipage}{0.4\linewidth}
+    \begin{center}
+      \textsf{Résultat} #3
+    \end{center}
+      #2\end{boxedminipage}
+      }
+\begin{document}
+
+\maketitle
+\tableofcontents
+\input c1
+\input c2
+\input meta
+\input root
+\input shell
+
+\raggedleft{\tiny Document composé en \LaTeX{}.}
+\end{document}

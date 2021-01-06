@@ -1,0 +1,544 @@
+
+\centerline{
+  \begin{minipage}{0.65\textwidth}
+    \textsl{Dans la suite la syntaxe:}
+
+    \begin{center}
+      \com{commande arguments}
+    \end{center}
+
+    \textsl{désignera
+une commande (à taper dans le shell); le \og prompt\fg{}, c'est à dire
+le début de la ligne de commande peut varier d'une configuration à l'autre;
+} \com{} \textsl{représente ce prompt et n'est pas à taper.}
+  \end{minipage}
+}
+\section{Utilisateurs et groupes}
+\subsection{Les utilisateurs}
+
+Les utilisateurs sont définis dans le fichier
+\texttt{/etc/passwd}
+
+Regardons\footnote{\com{less /etc/passwd} (par
+  exemple).\label{refnote1}}  une ligne du ficher, correspondant à la description de
+l'utilisateur de nom \ttt{moi}:  
+\begin{center}
+\texttt{moi:x:1000:1000:moi,,,:/home/moi:/bin/bash}
+\end{center}
+
+On y voit des champs séparés par \texttt{\og : \fg} qui sont:
+\begin{enumerate}
+\item Le nom de connexion de l'utilisateur (\og login\fg) (\texttt{moi}, ici).
+\item \texttt{x}: qui  contenait jadis le mot de passe.
+\item \texttt{1000}: en pratique, c'est un nombre qui identifie
+  l'utilisateur, et pas son nom (plus rapide, plus simple). Ici,
+  \texttt{1000} et \texttt{moi} sont associés et identifient le même
+  utilisateur. \texttt{1000} est l'\texttt{uid} de \texttt{moi}. Et
+  l'\texttt{uid}  est évidemment unique, des utilisateurs différents
+  ont des \texttt{uid} différents.
+\item \texttt{1000}: identifiant du groupe de l'utilisateur.
+  \item \texttt{moi,,,}: le \og vrai \fg{}nom (j'aurais pu mettre
+   \texttt{Thierry Dumont}), suivi de commentaires optionnels.
+  \item Le home directory (\texttt{/home/moi}).
+  \item Le chemin vers le shell utilisé, ici c'est \texttt{bash}.
+  \end{enumerate}
+
+Les utilisateurs appartiennent à des groupes (un ou plusieurs). Dans le
+fichier \ttt{/etc/passwd} on décrit le groupe \emph{principal} auquel
+l'utilisateur appartient. \emph{Dans beaucoup de distributions Linux,
+  le groupe principal a le même nom que l'utilisateur (moi, ici) et ne
+  contient qu'un seul utilisateur! Mais rien n'empêche de regrouper
+  les utilisateurs dans différents groupes, ce qui, on va le voir
+  permettrait de définir des ensembles d'utilisateurs plus ou moins
+  privilégies par exemple.}\smallskip
+
+\rmq{
+  \begin{itemize}
+    \item En parcourant le fichier \texttt{passwd}\footref{refnote1},
+      on remarque que pour certains utilisateurs, le shell est 
+      \texttt{/usr/sbin/nologin} ou \texttt{false}: on ne peut pas se
+      connecter au système sous ses noms d'utilisateur, mais on en verra
+      l'intérêt quand on regardera les \emph{processus}.
+    \item Commandes:
+      
+      \com{adduser} permet d'ajouter un utilisateur,
+      
+        \com{deluser} d'en supprimer un.
+      
+        \noindent Vous ne pourrez pas utiliser
+      ces commandes sous votre login habituel: l'explication viendra
+      par la suite.
+  \end{itemize}
+  }
+
+\paragraph{Un utilisateur pas comme les autres: \textsf{root}.}
+\begin{center}
+  \texttt{root:x:0:0:root:/root:/bin/bash}
+\end{center}
+\textsf{root} a tous les droits! même de faire
+
+\com{rm -f /}
+
+Il
+convient donc \emph{d'être très prudent} quand on prend cette identité, ce qui
+est absolument nécessaire pour accéder à certaines parties du système,
+configurer, installer des logiciels etc. On regardera ça par la suite.
+
+\subsection{Les groupes (d'utilisateurs)}
+Ils sont décrits dans le fichier \ttt{/etc/group} qui pour chaque groupe
+donne:
+\begin{itemize}
+\item Le nom du groupe.
+\item x : (champ désactivé).
+\item Le group-id (gid), un nombre unique.
+\item La liste des utilisateurs qui appartiennent à ce groupe.
+\end{itemize}
+
+Par exemple, su ma machine, le fichier \ttt{/etc/group} contient la ligne:
+
+\texttt{lpadmin:x:121:moi}.
+
+Ici, l'utilisateur ``moi''
+appartient au groupe lpadmin. On peut conjecturer que ``lpadmin'' a à
+voir avec les imprimantes (\textsl{line printer admininistration}) et
+qu'être membre de ce groupe va donner des 
+droits d'administration particuliers.
+
+
+
+\exo{}
+\`A quels groupes est ce que j'appartiens en tant qu'utilisateur?
+
+(utiliser \com{grep} et \com{/etc/group}\footnote{Ou plus simplement
+  la commande \com{groups} (sans argument).}).
+\section{Droits}
+\subsection{Commençons par un petit essai}
+Dans le fichier \ttt{/etc/passwd}, le champ du mot de passe est
+remplacé par un \ttt{x}, le mot de passe effectif étant dans
+\ttt{/etc/shadow}.
+
+\exo{Essayez de regarder le fichier /etc/shadow
+  (\com{less /etc/shadow}). Que se passe-t-il?}\smallskip
+
+Il y a visiblement des problèmes de permission (droits): c'est normal,
+car on a affaire à un fichier \textsl{sensible},
+mais comment est-ce que ça marche? Il faut s'intéresser aux \emph{droits}.
+\subsection{Droits concernant les fichiers, les répertoires etc.}~
+
+
+Résultat de:
+
+\com{ls -l /etc/passwd}
+
+\begin{center}
+\large\texttt{-rw-r---r--- 1 root root 3444 déc. 6 11:42 /etc/passwd}
+\end{center}
+
+Le premier tiret de
+
+
+\begin{center}
+\texttt{-rw-r---r--- 1 root root 3444
+  déc. 6 11:42 /etc/passwd}
+\end{center}
+
+indique qu'on a affaire à un fichier;
+  à la place du \textbf{-} on aurait \textbf{d} pour un
+  répertoire.
+
+
+Ensuite, il y a 3 triplets de 3 caractères (ici \texttt{rw-},
+\texttt{r---} et \texttt{r---}).
+Dans chaque triplet le
+premier caractère peut être \ttt{r} ou \ttt{-}, le second  \ttt{w} ou \ttt{-} et
+le troisième \ttt{x} ou \ttt{-}.
+
+\begin{itemize}
+  \item \ttt{r} indique le droit de lire, \ttt{-} l'impossibilité de
+    lire.
+  \item \ttt{w} indique le droit d'écrire, \ttt{-} l'impossibilité
+    d'écrire. Attention, écrire doit être pris au sens le plus large:
+    modifier, déplacer dans l'arborescence, renommer ou effacer, tout
+    ce qui peut modifier.
+  \item \ttt{x} indique:
+    \begin{itemize}
+      \item pour un fichier, le droit d'exécuter, c'est à dire que le
+        fichier est une  commande, un programme exécutable.
+      \item pour un répertoire, c'est le droit de traverser le
+        répertoire, ce qui n'implique pas de lire son contenu!
+    \end{itemize}
+    Et \ttt{-} indique l'absence de ce droit.
+\end{itemize}
+
+Que signifient chacun de ces 3 triplets?
+
+\begin{enumerate}
+  \item Le premier, les droits de l'utilisateur (root dans notre
+    cas). Qui, ici, peut 
+    donc lire le fichier et écrire dessus (modifier, effacer,
+    déplacer, etc!!!).
+  \item Le second, les droits des autres membres de son groupe (en
+    pratique, dans ce cas précis, il n'y en a sûrement pas): seulement
+    lire dans le   cas présent.
+  \item Le troisième: les droits du reste du monde, c'est à dire de
+    tous les autres utilisateurs: ici, c'est seulement le droit de lire.
+\end{enumerate}
+
+Peut-on changer les droits d'un fichier ou d'un répertoire? Oui, à
+condition qu'il vous appartienne, dans ce cas la commande est
+\com{chmod}; on va en voir un exemple plus loin.
+\subsection{Autres exemples}
+\begin{itemize}
+\item Pour \texttt{/etc/shadow}, les droits sont:
+
+  \begin{center}
+  \texttt{-rw-r--------- 1 root shadow 1763 déc. 6 11:42
+      /etc/shadow}
+  \end{center}
+  
+  \noindent et donc le fichier appartient à root et au groupe shadow. Vu les
+  droits, on voit qu'un utilisateur  qui n'est pas
+  ``root'' et qui n'appartient pas à ``shadow'' ne peut pas lire ce
+  fichier.
+  Notons que si on ajoutait un utilisateur  comme ``moi'' au
+  groupe ``shadow'', alors il pourrait lire ce fichier.
+  
+  \item \texttt{bash}: le shell. Pour savoir où il est, la commande
+    est:
+
+    \com{which bash}
+
+    Le résultat est probablement
+    \texttt{/usr/bin/bash}. Ensuite 
+
+    \com{ls -l /usr/bin/bash}
+
+    donne:
+
+    \texttt{-rwxr-xr-x 1 root root 1183448 juin  18  2020
+        /usr/bin/bash}
+
+    Remarquez les ``x'' pour tout le monde: c'est normal, car il
+    s'agit d'un programme
+    utilisé par tout le monde.
+ 
+
+\end{itemize}
+
+\exo{Étudiez la racine du système de fichiers en tapant: \com{ls -l/}}
+ 
+\exo{}
+  \begin{enumerate}
+  \item \com{cd /tmp} (pour être dans un coin tranquille).
+  \item Créez des répertoires emboîtés:
+
+    \com{mkdir toto}
+
+    \com{mkdir toto/tutu}\footnote{On peut faire ça en une seule
+      commande \com{mkdir -p toto/tutu}}
+
+    Créez un fichier vide dans tutu de nom ``file'' (ou ce que vous
+    voulez):
+
+    \com{touch toto/tutu/file} 
+  \item Pour voir les droits affectés à toto: \com{ls -dl toto}. Cela
+    devrait donner (en remplaçant moi par votre nom d'utilisateur):
+    
+    \texttt{drwxrwxr-x 3 moi moi 4096 déc.  24 15:23 toto}
+  \item Vérifiez que les commandes:
+
+    \com{ls toto} et \com{ls toto/tutu} fonctionnent.
+  \item Maintenant changez les droits de toto:
+
+    \com{chmod chmod ugo-rw toto}
+
+    (ce qui veut dire ``enlever les
+    droits de lire et d'écrire à l'utilisateur (u), au groupe (g) et
+    aux autres (o)).
+
+    \com{ls -dl toto} vous indique les nouveaux droits:
+
+    \texttt{d---x---x---x 3 moi moi 4096 déc.  24 15:23 toto}
+
+    On ne peut plus lire ni écrire.
+  \item Regardez maintenant ce que donnent les commandes:
+    \begin{itemize}
+    \item     \com{cd toto} puis \com{ls toto}.
+    \item Maintenant que vous êtes dans \ttt{toto}, tapez  \com{cd
+      tutu} ou \com{cd /tmp/toto/tutu}. Vérifiez que vous pouvez
+      écrire dans tutu
+    (\com{touch xx} par exemple).
+    \end{itemize}
+  \item Retour dans \ttt{/tmp}: \com{cd /tmp}. Essayez d'effacer
+    \ttt{toto}. Comme 
+    il n'est pas vide, la commande \com{rmdir} ne peut pas
+    fonctionner. Il faut utiliser \com{rm -r toto}. Que se passe-t-il?
+    
+  \item Redonnons nous le droit d'écrire sur et dans toto:
+    \com{chmod u+w toto}.
+    Essayons à nouveau \com{rm -r toto}.
+
+    Pourquoi est ce que ça
+    ne marche pas? Parce que \com{rm -r} a besoin de lire le contenu
+    de \ttt{toto} pour l'effacer. On tape \com{chmod u+r toto} et là, la
+      commande \com{rm -r toto} efface tout. Subtil!
+    
+    
+\end{enumerate}
+
+
+\section{Processus}
+Dans un guide Unix/Linux on peut lire: \emph{\og Un processus est une
+instance d'un programme en train de s'exécuter, une tâche. Le shell
+crée un nouveau processus pour exécuter chaque
+commande\fg}. Le terme \emph{instance} faisant partie du sabir
+informatique (le mot n'est pas français), on va tenter d'illustrer ça:\smallskip
+
+\com{which firefox}
+
+Réponse:
+
+\ttt{/usr/bin/firefox}.
+
+Le programme firefox est donc stocké dans le fichier \ttt{/usr/bin/firefox}.
+
+Que se passe-t-il si je tape \com{firefox} en ligne de
+commande? Le shell (bash) va chercher\footnote{dans une liste
+  de chemins bien définis -- on verra ça plus tard --} un fichier de nom
+firefox\footnote{il y a forcément plein de \texttt{x} dans les droits
+  du fichier \ttt{/usr/bin/firefox}: voir plus
+  haut!} et, après l'avoir trouvé,
+et de manière un peu simplifiée, demander au noyau linux de le copier
+en mémoire et de lancer son exécution.
+
+\`A l'exécution, ce n'est pas seulement une copie qui réside en
+mémoire, mais aussi des données\footnote{Pensez par exemple à
+  libreoffice: les données, c'est le texte que vous écrivez.},  une
+description des fichiers ouverts 
+et un \og état programme\fg, qui pointe vers l'instruction en cours
+dans le programme.
+
+\`A partir de ce moment là,
+cette ``copie'' (= instance) devient pendant toute la durée de son
+exécution un \textsf{processus}.
+
+ Le processus ne peut pas accéder en dehors des 
+zones de mémoire que le système lui a alloué.
+
+
+\`A chaque processus sont associés:
+\begin{enumerate}
+\item un numéro (PID, \textsl{process id}) unique et chaque
+processus appartient à un utilisateur et hérite des droits (de lire,
+d'écrire,...) de l'utilisateur \emph{et} des groupes auxquels il
+appartient. D'autre part, un utilisateur n'a aucun droit sur les
+processus des autres utilisateurs.
+\item un processus \emph{père}, repéré par son PPID (\textsl{parent
+  process identifier}): \emph{tout processus} a un père, à une
+  exception près, car 
+  il faut bien  un ancêtre commun: c'est le
+  processus \ttt{init} qui a le PID 1. Tous les autres en descendent
+  et ont des PID $>$ 1.
+\end{enumerate}
+Pour pouvoir faire quelques expériences, il faut d'abord apprendre à
+maîtriser l'outil qui permet de  voir quels sont les processus
+présents et leurs caractéristiques:  la
+commande \com{ps} suivie d'options.
+
+\subsection{La commande \com{ps}}
+La commande \com{ps} est un peu bizarre.
+\begin{itemize}
+\item Si vous tapez juste \com{ps}, vous ne verrez que les processus
+  qui dépendent de votre shell (terminal) soit en général juste
+  \ttt{bash} et \ttt{ps} (puisque justement, vous êtes en train de
+  faire tourner...\ttt{ps}):
+\begin{verbatim}
+    PID TTY          TIME CMD
+ 338023 pts/5    00:00:00 bash
+ 371762 pts/5    00:00:00 ps
+\end{verbatim}
+mais vous voyez quand même les \ttt{PID}, le terminal \ttt{TTY} auquel
+ils sont attachés, le temps calcul dépensé \ttt{TIME} et le nom de la
+commande \ttt{CMD}.
+\item Si vous tapez \com{ps -e}, vous voyez tous les processus en
+  cours. Je recommande de taper
+
+  \com{ps -e | less}
+
+  car il y a beaucoup
+  de processus en cours! Mais ça ne dit quand même pas grand chose
+  sur chaque processus.
+\item \com{ps -F -U moi} (remplacez \com{moi} par votre nom
+  d'utilisateur): vous montre tous \emph{vos} processus en vous disant
+  beaucoup de choses.
+
+  \com{ps -F -U moi|less}
+
+  ou
+
+  \com{ps -F -U  moi|head}\footnote{\texttt{head} montre tes premières
+    lignes d'un fichier. De même, il ya \texttt{tail}...}
+  
+  vont vous permettre de voir le début de cette liste. La
+  première ligne est:
+\begin{verbatim}
+  UID   PID    PPID  C    SZ   RSS PSR STIME TTY   TIME CMD
+\end{verbatim}
+Détaillons un peu:
+\begin{itemize}
+\item  \ttt{UID PID PPID}: on a vu ça plus haut.
+\item  \ttt{C}: pourcentage d'utilisation du processeur. 
+\item  \ttt{SZ  RSS}: la taille mémoire réservée par le processus et la
+  taille réellement utilisée.
+\item   \ttt{STIME}: date de démarrage du processus
+\item   \ttt{TTY}: le terminal depuis lequel la commande a été
+  lancée. Mais si la commande n'a pas été lancée depuis un terminal,
+  on a un ``?''.
+\item \ttt{TIME}: le temps UC consommé par le processus depuis son démarrage.
+\item \ttt{CMD}: la commande.
+\end{itemize}
+\item Avec
+
+  \com{ps -aef}
+
+  on voit de manière étendue les
+  processus de tous les utilisateurs.
+\end{itemize}
+
+\exo{
+Commencez par agrandir au maximum votre fenêtre de ligne de commande
+(en général la touche F1 le fait (F1 aussi pour revenir à un terminal
+de taille normale)).
+
+Ensuite:
+
+\com{ps -aef | less}
+
+Vous devriez voir quelque chose qui ressemble à ça:
+
+\begin{verbatim}
+UID          PID    PPID  C STIME TTY          TIME CMD
+root           1       0  0 déc.13 ?      00:00:12 /lib/systemd/systemd --system --deserialize 16
+root           2       0  0 déc.13 ?      00:00:00 [kthreadd]
+root           3       2  0 déc.13 ?      00:00:00 [rcu_gp]
+root           4       2  0 déc.13 ?      00:00:00 [rcu_par_gp]
+root           6       2  0 déc.13 ?      00:00:00 [kworker/0:0H-kblockd]
+root           9       2  0 déc.13 ?      00:00:00 [mm_percpu_wq]
+root          10       2  0 déc.13 ?      00:00:07 [ksoftirqd/0]
+root          11       2  0 déc.13 ?      00:07:10 [rcu_sched]
+root          12       2  0 déc.13 ?      00:00:02 [migration/0]
+\end{verbatim}
+
+Ce qui s'analyse ainsi: 
+\begin{itemize}
+\item Le process 1 est \ttt{systemd} qui va lancer... beaucoup de
+  choses. Sur d'autres distribution (la mienne est une Ubuntu 20/10)
+  cela peut être \ttt{init} (c'est très \og Linux canal
+  historique\fg).
+\item Si on regarde les processus suivants, on voit qu'ils ont des PID
+  croissants, mais qu'ils sont lancés (PPID) par le processus de PID =
+  2.
+\item Supposons que firefox est lancé (sinon, il n'y a qu'à le
+  lancer!).
+  
+  \com{ps -aef |grep firefox}
+
+  On obtient à peu près (la sortie est tronquée à droite\footnote{et chez
+    vous, ça va forcément être un peu différent.}):
+\begin{verbatim}
+moi       373641  337755  6 16:58 ?        00:00:13 /usr/lib/firefox/firefox
+moi       373755  373641  2 16:58 ?        00:00:06 /usr/lib/firefox/firefox ...
+moi       373801  373641  0 16:58 ?        00:00:00 /usr/lib/firefox/firefox ..
+moi       373956  373641  1 16:59 ?        00:00:02 /usr/lib/firefox/firefox ...
+moi       374054  373641  3 17:00 ?        00:00:04 /usr/lib/firefox/firefox ...
+moi       374100  373641  2 17:00 ?        00:00:03 /usr/lib/firefox/firefox ...
+\end{verbatim}
+Ce qui s'analyse ainsi (faire la même analyse chez vous):
+\begin{enumerate}
+\item Il y a 6 processus. les deuxième et les suivants ont un PPID =
+  373641, et donc ils ont été lancés par le processus de PID = 373641,
+  qui est le premier de la liste\footnote{Pourquoi firefox lance-t-il autant
+  de processus? probablement pour des questions de performances et/ou
+   de sécurité.}.
+\item Mais si on regarde la première ligne, on voit aussi que le
+  processus de PID = 373641 au PPID = 337755. Qui donc a lancé ce
+  ``premier'' firefox?
+
+  \com{ps -aef |grep 337755}
+
+ et vous aurez son ``père''\footnote{chez moi, c'est un processus de xfce4, car
+ j'utilise xfce, pas gnome.}.
+\end{enumerate}
+\end{itemize}
+
+  }
+  
+\subsection{D'autres commandes associées aux processus}
+\subsubsection{Voir les processus tourner:}
+La commande \com{top} vous montre les processus actifs en tête. On
+peut jouer sur 
+le taux de rafraîchissement, et tuer un processus (\ttt{k}).
+
+\subsubsection{Arrêter un processus: la commande \com{kill}}
+Cette commande permet d'envoyer un signal à un processus (en pratique,
+on tue le processus). La syntaxe est: \ttt{kill} suivi d'au moins un
+espace et le PID du process à tuer\footnote{Pour les processus
+  récalcitrants, on peut faire \com{kill -9} PID.}.
+
+\exo{
+Chercher à nouveau les processus  firefox comme ci-dessus, et tuer le
+premier. Chez moi cela donne:
+
+\com{kill 373641}
+
+En procédant ainsi tue le père... et ses descendants $=>$ plus aucun  firefox ne
+tourne.
+On peut aussi tuer un des ses fils.
+
+  }
+\subsection{Autres  notions sur les processus}
+\begin{enumerate}
+\item Espace utilisateur et espace noyau: la mémoire est coupée en
+  deux parties, l'espace utilisateur et l'espace noyau. Tous vos
+  processus tournent dans l'espace utilisateur, et ceux du noyau dans
+  l'espace noyau. Vous ne pouvez pas intervenir sur les processus qui
+  tournent dans l'espace noyau: c'est une sécurité
+  supplémentaire. Avec les CPUs Intel, ces protections sont mêmes
+  assurées par le processeurs (les \emph{rings}).
+\item Un processus peut créer des processus fils. On l'a déjà vu avec
+  \ttt{initd}. Une notion un peu différente est le \emph{fork} ou un
+  processus crée une copie de lui même.
+
+\item Les processus peuvent communiquer entre eux. Il existe pour cela
+  différents mécanismes (exemples: une zone de mémoire partagée, les
+  sockets (une sorte de réseau interne à la machine), le \emph{pipe}
+  qu'on a vu avec la commande \texttt{|} etc.
+  
+\item Un processus peut créer des \emph{processus légers} appelés
+  \emph{threads}. La différence avec la création de processus classiques,
+  c'est principalement que tous les \emph{threads} et leur père
+  partagent la même zone mémoire. Si la commande \com{top} vous montre
+  un programme qui consomme plus de 100\% d'UC, c'est que plusieurs
+  threads tournent en parallèle. Vous pouvez installer le package
+  \ttt{htop} qui permet de bien visualiser ça. L'intérêt des
+  \emph{processus légers} est la rapidité de la communication entre
+  eux puisqu'il n'y a aucun mécanisme de partage de données à mettre
+  en jeu\footnote{C'est en général là-dessus que repose la parallélisme
+    en mémoire partagée: si vous utilisez des logiciels de vidéo par
+    exemple, ils 
+    sont en général multithreadés, tant le genre de calcul qu'ils font
+    est coûteux. Avec $n$ c{\oe}urs, on peut en théorie calculer $n$ fois
+    plus vite qu'avec un seul.}. Le défaut, c'est que leur
+  programmation est délicate (partage de mémoire $=>$ pas de
+  protection d'accès mémoire entre threads).
+
+\item \textbf{Les démons (daemons):}
+ Ce   sont des programmes résidents qui sont à priori  chargés au
+ démarrage.
+ Quelques exemples: \ttt{cupsd}: gestionnaire d'impression,
+ \ttt{rsyslogd}: gestion des ``logs'', \ttt{ntpd}: synchronisation de
+ l'horloge avec une horloge distante, etc.
+\end{enumerate}
+
+
+\raggedleft{\tiny Document composé en \LaTeX{}.}

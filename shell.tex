@@ -1,0 +1,68 @@
+\section{Le shell: configuration, environnement}
+\begin{enumerate}
+\item Dans le home directory, quelques fichiers cachés\footnote{Les
+  fichiers et les répertoires cachés ont un nom qui commence par ``.''.
+  La commande \com{ls} ne les montre pas, il faut ajouter l'option
+  \ttt{a}: \com{ls -a} pour les voir.} sont importants.
+
+  
+  \dx{
+    \com{ls ~/.*bash*}
+
+ ~ }{
+%\begin{verbatim}
+/home/moi/.bash\_history  /home/moi/.bashrc
+/home/moi/.bash\_logout 
+%\end{verbatim}
+
+~
+}{(chez moi)}
+
+Et il existe aussi, toujours dans le home directory, un fichier de nom
+\ttt{.profile}
+
+\item
+  Dans \ttt{/etc}
+
+  \dx{
+    \com{ls /etc/bash*} }
+  {
+%\begin{verbatim}
+/etc/bash.bashrc  /etc/bash\_completion
+/etc/bash\_completion.d:
+
+apport\_completion
+
+git-prompt  gmic
+%\end{verbatim}
+  }{(chez moi)}
+  
+  et
+
+  \dx{\com{ls /etc/profi*}}
+{
+/etc/profile
+
+/etc/profile.d:
+
+01-locale-fix.sh gawk.sh
+
+vte-2.91.sh
+
+bash\_completion.sh
+
+
+}{(chez moi --abrégé-- )}
+
+
+\end{enumerate}
+
+\`A quoi tout cela sert-il?
+\begin{itemize}
+
+\item \`A définir des \emph{variables d'environement.}
+\item \`A définir ou à modifier des commandes.
+\end{itemize}
+
+Les variables d'environement sont globales et peucvent être utilisées
+par les programmes pour leur permettre d'adapter leur comportement.
