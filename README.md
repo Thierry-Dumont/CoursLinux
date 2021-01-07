@@ -2,7 +2,7 @@
 
 **En cours de développement**
 
-Petit cours Linux donné en vidéo au temps du confinement, en vidéo
+Petit cours Linux donné en vidéo au temps du confinement.
 
 Pour compiler le document:
 
