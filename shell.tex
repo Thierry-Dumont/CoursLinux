@@ -1,4 +1,5 @@
 \section{Le shell: configuration, environnement}
+\label{initshell}
 \begin{enumerate}
 \item Dans le home directory, quelques fichiers cachés\footnote{Les
   fichiers et les répertoires cachés ont un nom qui commence par ``.''.
@@ -7,7 +8,7 @@
 
   
   \dx{
-    \com{ls ~/.*bash*}
+    \com{ls \~ /.*bash*}
 
  ~ }{
 %\begin{verbatim}
@@ -31,9 +32,9 @@ Et il existe aussi, toujours dans le home directory, un fichier de nom
 /etc/bash.bashrc  /etc/bash\_completion
 /etc/bash\_completion.d:
 
-apport\_completion
+\textsf{apport\_completion}
 
-git-prompt  gmic
+\textsf{git-prompt  gmic}
 %\end{verbatim}
   }{(chez moi)}
   
@@ -45,11 +46,11 @@ git-prompt  gmic
 
 /etc/profile.d:
 
-01-locale-fix.sh gawk.sh
+\textsf{01-locale-fix.sh gawk.sh}
 
-vte-2.91.sh
+\textsf{vte-2.91.sh}
 
-bash\_completion.sh
+\textsf{bash\_completion.sh}
 
 
 }{(chez moi --abrégé-- )}
@@ -60,9 +61,90 @@ bash\_completion.sh
 \`A quoi tout cela sert-il?
 \begin{itemize}
 
-\item \`A définir des \emph{variables d'environement.}
+\item \`A définir des \emph{variables d'environnement.}
 \item \`A définir ou à modifier des commandes.
+\item Ce qui a un nom contenant \ttt{completion} sert à definir les
+  règles de complétion automatique (quand on tape un TAB).
 \end{itemize}
 
-Les variables d'environement sont globales et peucvent être utilisées
-par les programmes pour leur permettre d'adapter leur comportement.
+Les variables d'environnement sont globales et peuvent être utilisées
+par les programmes pour leur permettre d'adapter leur
+comportement. Un exemple typique: la langue utilisée.
+
+\begin{itemize}
+  \item les fichiers \ttt{profile} sont indépendants du shell utilisé.
+  \item L'ordre de parcours est :
+    \begin{itemize}
+    \item d'abord le(s) fichiers \ttt{profile} de \ttt{/etc},
+    \item puis \ttt{/etc/bash.bashrc},
+    \item puis le fichier \ttt{\~/.profile}
+    \item puis \ttt{\~/.bashrc}.
+    \end{itemize}
+\end{itemize}
+
+On peut donc, dans les fichiers  \ttt{\~/.profile} et \ttt{\~/.bashrc}
+compléter ce qui est fait dans \ttt{/etc} ou redéfinir des variables.
+
+\subsection*{Qu'est-ce qui est défini?}
+
+La commande
+
+\com{printenv}
+
+permet de voir tout ça. Il y a beaucoup de variables définies!
+
+Remarquons entre autres:
+
+\begin{itemize}
+\item \ttt{SHELL=/bin/bash}
+
+  Ici, la variable est \ttt{SHELL} et elle contient
+  \ttt{/bin/bash}. C'est le shell qu'on utilise bien sûr.
+\item Des variables dont le nom commence par \ttt{LC}: définissent la
+  langue utilisée et les jeux de caractères utilisés.
+\item etc.
+\end{itemize}
+
+On affecte des valeurs dans le shell en faisant par exemple:
+
+\com{x=''coucou''}
+
+mais pour voir ce que contient la variable, il faut faire:
+
+\com{echo \$x}
+
+\subsection*{Une variable importante: le \ttt{path}}\label{path}
+Essayez:
+
+\com{echo \$PATH}
+
+ou
+
+\com{printenv|grep PATH}
+
+On obtient une liste de chemins dans le système de fichiers, ou les
+chemins sont séparés par \ttt{:}. Exemple (chez moi):
+
+  
+\noindent\ttt{/home/moi/.local/bin:/usr/local/sbin:/usr/local/bin:}\newline \ttt{/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin 
+}
+
+\begin{itemize}
+\item Quand on tape une commande, le shell va la chercher
+  successivement dans chacun des chemins de \ttt{PATH}, dans l'ordre,
+  et exécute la première trouvée.
+
+\item On peut modifier le \ttt{PATH}. Pour rajouter un chemin, on peut
+  faire (ici je rajoute \ttt{/opt/}):
+
+  \com{PATH=/opt/:\$PATH} (ajout au début)
+
+  ou:
+
+  \com{PATH=\$PATH:/opt/} (ajout à la fin).
+
+  \com{echo \$PATH} pour voir le résultat.
+
+  C'est typiquement le genre de commande qu'on peut rajouter dans
+  \ttt{\~/.bashrc}. 
+\end{itemize}

@@ -1,5 +1,7 @@
 \section{Noms de fichiers, méta-caractères, et expressions régulières}
-Un exemple (à tester) pour commencer:
+Un exemple pour commencer (à tester; évidemment le choix de
+\ttt{/var/log} n'est là 0
+que comme exemple):\label{regular}
 
 \com{ls /var/log}
 
@@ -7,28 +9,41 @@ Un exemple (à tester) pour commencer:
 \ttt{log} (par exemple \ttt{boot.log}). Comment ne lister que ceux ci?
 
 Pour cela, on utilise le méta-caractère
-``*'':
+``\ttt{*}'':
 
 \com{ls /var/log/*.log}
 
-et on ne voit qu'eux.
+et on ne voit plus qu'eux.
 
-\underline{Explication}: ``*'' correspond à n'importe quelle chaîne de caractères
+\underline{Explication}:
+\begin{itemize}
+
+\item ``\ttt{*}'' correspond à n'importe quelle chaîne de caractères
 (formée de caractères alphabétiques, numériques et autres).
-La commande \com{ls /var/log/*.log} va donc lister tous les fichiers
-de \ttt{/var/log} dont le nom commence par n'importe quelle chaîne de
-caractère, mais finit par \ttt{.log}.
+  La commande
 
-Quelques autres exemples d'utilisation du jocker ``*'':
+  \com{ls /var/log/*.log}
+
+  va  lister tous les fichiers qui
+sont dans 
+ \ttt{/var/log} dont le nom commence par n'importe quelle chaîne de
+caractère, mais finit par \ttt{.log}. 
+\item Mais ce n'est qu'une particularisation de quelque chose de plus
+  vaste: les \emph{expressions régulières}. Avec les  \og bons \fg{}
+  outils, on peut, par exemple, trouver dans un texte (dans une chaîne
+  de caractères) tous les   \emph{mots} qui se terminent par \ttt{.log}.
+\end{itemize}
+
+
+\ding{42} Quelques autres exemples d'utilisation du jocker ``\ttt{*}'':
 \begin{itemize}
 \item On peut lister
 tous les fichiers dont le nom commence par exemple par \ttt{syslog}:
 
 \com{ls /var/log/syslog*}
 
-\item On voit que certains fichiers dont le nom commence par
-  \ttt{syslog} sont compressés (extension
-  \ttt{.gz}).
+\item Dans ce cas précis, on voit que certains fichiers dont le nom
+  commence par \ttt{syslog} ont une extension  \ttt{.gz} (fichiers compressés).
 
   Pour ne lister qu'eux, je peux faire:
 
@@ -37,16 +52,18 @@ tous les fichiers dont le nom commence par exemple par \ttt{syslog}:
 
 
 \begin{center}
-  \begin{minipage}{0.75\linewidth}
+  \begin{boxedminipage}{0.75\linewidth}
     \begin{itemize}
-    \item \emph{Le méta-caractère ``*'' correspond à n'importe quelle
+    \item \emph{Le méta-caractère ``\ttt{*}'' correspond à n'importe quelle
   chaîne de caractères, de longueur quelconque.} 
     \item \emph{Le méta-caractère ``?'', lui, correspond à un
         seul caractère, quelconque.}
     \end{itemize}
-\end{minipage}
+\end{boxedminipage}
 \end{center}
-\underline{Exemple} (tester):
+
+
+\underline{Exemple} (à tester):
 
 
 \com{ls /var/log/syslog.?.gz}
@@ -58,12 +75,15 @@ ou bien
 dans ce cas, les 3 caractères ``matchés'' par \ttt{???} peuvent être
 chacun quelconques et différents.
 
-\paragraph{D'autres manières de filtrer:}
+\paragraph{\ding{42} D'autres manières de filtrer:}
 \begin{itemize}
 \item Supposons que je veuille filtrer sur un seul caractère, numérique. Je
-définis alors un intervalle de recherche \ttt{[0-9]}, puis:
+me sers alors d'intervalle de recherche \ttt{[0-9]}, puis:
 
 \com{ls /var/log/syslog.[0-9].gz}
+
+\ttt{[0-9]} va \textsl{matcher} tous les caractères de l'intervalle,
+c'est à dire les chiffres de 0 à 9. 
 
 \item Si je veux filtrer sur les noms qui commencent par \ttt{a},
   \ttt{b} ou \ttt{c}, je peux 
@@ -71,7 +91,7 @@ faire:
 
 \com{ls /var/log/[a-c]*}
 
-\item Évidemment on peut tout mixer:
+\item Bien sûr, on peut tout mixer:
 
 \com{ls /var/log/[a-c]*.[0-9].gz}
 
@@ -82,7 +102,8 @@ et aussi être plus restrictif:
 
 Attention: l'ordre des caractères alphabétiques est
 \texttt{ABC....Zabc...z} et par 
-conséquent \ttt{[a-B]} est un intervalle vide. En revanche \ttt{[A-z]}
+conséquent \ttt{[a-B]} est un intervalle vide, comme le serait
+\ttt{[3-1]}. En revanche \ttt{[A-z]}
 est l'ensemble de tous les caractères alphabétiques\footnote{C'est
   vrai tant qu'on se cantonne à l'utilisation des caractères ASCII;
   aujourd'hui on peut représenter \og tous\fg{} les caractères (Unicode).}. 
@@ -106,7 +127,10 @@ est l'ensemble de tous les caractères alphabétiques\footnote{C'est
 
 
   Mais comment est-ce que ça marche? Il faut en dire un peu plus sur
-  le mécanisme du shell. Que se passe-t-il quand on tape une commande?
+  le mécanisme du shell.
+  
+  Que se passe-t-il quand on tape une commande?
+  
   Réponse: la commande est interprétée par le shell:
 
   \begin{enumerate}
@@ -119,10 +143,11 @@ est l'ensemble de tous les caractères alphabétiques\footnote{C'est
       Essayez par exemple:
 
       \com{\&ls}
-    \item Le shell extrait le premier mot de la ligne, considérant que
+    \item Une fois cette étape passée, shell extrait le premier mot de
+      la ligne, considérant que 
       ce mot se termine au premier caractère ``espace'', et considère
       que c'est une commande. Il cherche alors cette
-      commande\footnote{On va voir plus loin où il cherche.}; s'il ne
+      commande (voir plus loin, page \pageref{path}); s'il ne
       la trouve pas, il vous le dit, sinon il lance la commande en
       lui passant le reste de la ligne comme \emph{argument}. Exemple:
       
@@ -132,8 +157,9 @@ est l'ensemble de tous les caractères alphabétiques\footnote{C'est
       commande \ttt{ls} reçoit ``\ttt{-l /tmp}''\footnote{Notons que les
         espaces en trop sont supprimés: plusieurs espaces successifs se
         comportent comme un  seul.}.
-    \item Mais si la ligne de commande contient une expression régulière,
-      celle-ci est évaluée et la chaîne résultante est  passée à la
+    \item Mais si la ligne de commande contient une expression
+      régulière (au lieu de simplement \ttt{/tmp}),
+      celle-ci est évaluée et c'est la chaîne résultante qui est  passée à la
       commande: par  exemple,  si dans mon répertoire 
       courant il existe les 
       fichiers \ttt{toto.txt} et \ttt{toto.pdf}, la commande
@@ -155,12 +181,12 @@ est l'ensemble de tous les caractères alphabétiques\footnote{C'est
       correcte, etc.): le processus \ttt{ls} va faire ce qu'il a à faire, et
       finalement renvoyer au shell un message ``tout s'est bien passé'',
       ou bien un message d'erreur, et le shell reprend
-      complètement la main, et attend de vous une autre commande.
+      complètement la main, et attend de vous une autre commande.\ding{169}
 
 
       Derrière tout ça il y a la notion importante,
       mais hors de l'horizon de ce cours, de \emph{grammaire formelle}
       et d'\emph{analyse syntaxique}. Le shell est un interpréteur de
       commande sophistiqué qui permet d'écrire des programmes dans un
-      langage bien défini, qui suis une \emph{grammaire} bien précise.
+      langage bien défini, qui suit une \emph{grammaire} bien précise.
    \end{enumerate} 

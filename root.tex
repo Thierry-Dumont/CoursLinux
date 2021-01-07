@@ -1,4 +1,4 @@
-\section{Deux manières d'acquérir des pouvoirs exceptionnels}
+\section{\textdbend Deux manières d'acquérir des pouvoirs exceptionnels}
 Comme on l'a vu, les utilisateurs \og standard\fg{} n'ont pas tous les
 pouvoirs\footnote{Entre autres, ils n'ont pas accès à certains
   fichiers ou répertoires, ou bien des accès restreints (lecture seule
@@ -10,8 +10,8 @@ Les distributions Linux actuelles proposent deux méthodes:
 
 \begin{itemize}
 \item \emph{Le superutilisateur:}
-C'est un utilisateur de  nom  \textsf{root}. Il a, par définition, tous les
-droits. Donc, il est dangereux d'être ``root''\footnote{ne jamais être
+C'est un utilisateur de  nom  \texttt{root}. Il a, par définition, tous les
+droits. Donc, il est dangereux d'être \texttt{root}\footnote{ne jamais être
   root en état d'ivresse.}.
 \item \emph{La commande \ttt{sudo}:}
   elle permet d'exécuter une commande en étant root, le temps que dure
@@ -35,7 +35,8 @@ privilèges de root, en contrôlant le plus possible ce qui est fait, car:
   \item Il faut donner son propre mot de passe.
 
   \item Le mot de passe vous donne le bien droit de faire ``sudo'', mais ce
-    droit est limité dans le temps
+    droit est limité dans le temps (il faut redonner le mot de passe
+    au bout d'un certain temps).
 \end{itemize}
 
 Regardez ce que donnent:
@@ -56,9 +57,11 @@ le fichier  \ttt{/etc/shadow}\footnote{\com{sudo grep root
 ``!'' désactive la possibilité de se connecter.
 
 En fait, c'est assez dépendant des distributions Linux. Sous les
-debian, sudo n'est pas installé par défaut, et root est
+Debian, sudo n'est pas installé par défaut, et root est
 un utilisateur comme les autres, avec un mot de passe. Sous Ubuntu on
-installe sudo par défaut, mais il suffit de donner un 
+installe sudo par défaut\footnote{\com{apt install sudo} doit
+  l'installer; il faudra ensuite ajouter le ou les utilisateurs ad~hoc
+  au groupe \texttt{sudo}.}, mais il suffit de donner un 
 mot de passe\footnote{Question: comment faire? La commande pour changer
   \emph{votre} mot de passe est \com{passwd}. Pour changer ou définir
   celui de \ttt{root}, il faut... être \ttt{root}.} à l'utilisateur root pour pouvoir aussi se connecter en tant
@@ -70,9 +73,36 @@ tant que root.
 Quelques avantages de sudo:
 \begin{itemize}
 \item On contrôle (via le groupe sudo) qui peut acquérir les
-  privilèges de  ``root''.
+  privilèges de  \texttt{root}.
 \item Il faut déjà être connecté pour pouvoir faire sudo.
 \item On peut configurer assez finement ce qui est autorisé pour les
   utilisateurs qui peuvent faire sudo (voir les fichiers et
   répertoires dont le nom commence par sudo dans \ttt{/etc}).
 \end{itemize}
+
+
+Comment devenir \texttt{root} quand la machine  n'utilise pas
+\ttt{sudo}? On peut 
+évidemment se déconnecter et se reconnecter \texttt{root} qui est un
+utilisateur presque comme les autres, ou bien sans se déconnecter,
+utiliser la commande \ttt{su}:
+
+\ttt{man su}
+\begin{center}
+\ttt{run a command with substitute user and group ID}
+\end{center}
+
+Dans un terminal, on tape:
+\begin{itemize}
+\item \com{su -}
+
+  Il faut donner le mot de passe de root. Le ``-'' permet  de tout faire comme
+  dans un vrai login (initialiser le shell (cf. page \pageref{initshell}).
+
+\item \com{su - commande}
+
+  comme pour \ttt{sudo} (mais \ttt{su} ne se
+  souvient pas de votre mot de passe).
+\end{itemize}
+
+\small{\textdbend}  Encore une fois: ATTENTION!

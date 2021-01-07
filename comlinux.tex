@@ -1,0 +1,56 @@
+\section{Forme (presque générale) des commandes Unix}
+  \`A titre d'exmple, quelques unes des  différentes formes que
+ peut prendre la commande \ttt{ls}:
+
+  \begin{enumerate}
+  \item \com{ls}
+  \item \com{ls /tmp }
+
+  \item   \com{ls /tmp /usr/ /bin}
+
+    (ou \com{ls /var/log/*.log}, on
+    verra ça  plus loin).%page \pageref{regular}).
+
+  \item \com{ls -l /tmp /usr/ /bin}
+  \item \com{ls -l -t -r /tmp}
+
+    mais en pratique on tapera plutôt:
+
+    \com{ls -ltr /tmp}
+    
+  \end{enumerate}
+
+  On voit la structure d'une commande (les crochets \ttt{\{  \}}
+  indiquent quelque chose de facultatif): 
+
+  \begin{center}
+    \texttt{commande \{-options\} \{-options\} \{arguments\}}
+  \end{center}
+
+  Une description plus exacte de la syntaxe nécessiterait d'utiliser
+  la forme de Backus--Naur (voir
+  \url{https://fr.wikipedia.org/wiki/Forme_de_Backus-Naur} par
+  exemple), ce qui n'est pas vraiment prévu dans ce cours.
+
+  On remarque qu'il existe en général une forme simple, sans
+  arguments (1), une forme avec des arguments (2)(3) et qu'on modifie le
+  comportement de la commande (on le complexifie) en ajoutant une ou
+  plusieurs options, le ``-'' précédant chaque option ou chaque groupe
+  d'options.
+
+  Dans certains cas les options peuvent avoir elles aussi des
+  arguments. Par exemple, la commande utilisée pour imprimer un fichier:
+
+  \begin{itemize}
+    \item \com{lpr chemin\_vers\_le\_fichier}
+
+      imprimera le fichier sur l'imprimante standard.
+
+    \item \com{lpr -P imp2 chemin\_vers\_le\_fichier}
+
+      imprimera le fichier sur l'imprimante de nom \ttt{imp2}.
+  \end{itemize}
+  
+  
+
+  
