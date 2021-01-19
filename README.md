@@ -2,7 +2,8 @@
 
 **En cours de développement**
 
-Petit cours Linux donné en vidéo au temps du confinement.
+Petit cours Linux donné en vidéo au temps du confinement dans le cadre de l'ALDIL
+(Association Lyonnaise pour le Développement de l'Informatique Libre)
 
 Pour compiler le document:
 
@@ -10,9 +11,17 @@ Pour compiler le document:
 
 * Installer une distribution LaTeX (TeXLive sous Linux).
 
+* Vous avezbesi de biber.
+
+Pour compiler:
+
 * xelatex cours.tex
 
-  (à exécuter au moins deux fois).
+* biber cours
+
+* xelatex cours.tex
+
+Le résultat est un fuvhier cours.pdf
 
 
 
