@@ -1,0 +1,295 @@
+\section{Une application complète: sauvegarde d'un répertoire avec
+  rsync}
+
+
+
+\subsection*{But}: réaliser une sauvegarde \og intelligente \fg{} d'un
+répertoire vers un autre (à priori sur un support externe, connecté en
+usb).
+
+\subsubsection*{Rsync} La commande rsync est très
+puissante\footnote{\ttt{rsync} n'est pas forcément installé par
+  défaut:
+
+  \com{sudo apt install rsync}
+
+  ou l'équivalent pour l'installer.}; à priori
+c'est une simple copie d'un répertoire vers un autre, par exemple:
+
+\com{rsync /home/ /mnt/home/}
+
+va copier le répertoire \ttt{/home/} vers \ttt{/mnt/home/}. Mais
+attention, \emph{on ne va copier que ce qui n'est pas déjà présent dans}
+\ttt{/mnt/home/}, \emph{ou ce qui est déjà présent dans} \ttt{/mnt/home/}
+ {mais a été modifié dans}
+\ttt{/home/}.  Le but est de synchroniser (d'où le nom de la
+commande) les deux répertoires en  faisant le minimum de travail.
+
+Mais \ttt{rsync} a plein d'options:
+
+\begin{itemize}
+\item On peut déjà ajouter \ttt{-a} (archive):
+  
+  \com{rsync -a /home/ /mnt/home/}
+
+  avec cette option on conserve tous les droits, les propriétaires et
+  les groupes des fichiers et répertoires.
+
+\item On peut aussi ajouter \ttt{\tirr delete} (oui, il y a bien
+  deux ``\ttt{-}''): 
+
+  \com{rsync -a \tirr delete /home/ /mnt/home/}
+
+  alors, si des fichiers existent dans \ttt{/mnt/home/} sans exister
+  dans \ttt{/home/}, ils sont effacés dans \ttt{/mnt/home/}.
+\end{itemize}
+  
+  \textbf{Avec ces deux options, on est donc capable de faire une
+    sauvegarde parfaite\footnote{Le contenu de \ttt{/mnt/home/} sera
+      bien identique à celui de \ttt{/home/} après.}.}
+  
+  Autres options de \ttt{rsync}, souvent utiles:
+
+  \begin{itemize}
+    \item Verbose: \texttt{-v}: vous dit tout ce que fait rsync. C'est
+      rapidement beaucoup trop bavard, mais c'est très utile pour la
+      mise au point!
+
+    \item \texttt{\tirr dry-run}: ne transfère rien, mais fait juste un
+      test.
+  \end{itemize}
+
+  Avant toute copie, ou la première fois il est \large{vraiment}
+  recommandé de faire un test à blanc:
+
+  \com{rsync -av \tirr delete \tirr dry-run /home/ /mnt/home/}
+
+  Bien regarder ce qui se passe!\footnote{Il peut être judicieux de
+    faire: \com{rsync -av \tirr delete \tirr dry-run /home/ /mnt/home/|less}}
+    
+\subsection{La sauvegarde} On va d'abord faire les choses \og à la
+main\fg{}, et puis on automatisera la sauvegarde.
+
+Que faut il faire?
+
+\begin{enumerate}
+  \item Monter la partition sur laquelle on va faire la sauvegarde, si
+    c'est nécessaire.
+  \item Avec \ttt{rsync} synchroniser les deux répertoires: celui à
+    sauvegarder et la sauvegarde.
+  \item Éventuellement, démonter la partition de sauvegarde.
+\end{enumerate}
+
+Ne pas garder la partition de sauvegarde montée en permanence diminue
+les risques d'écriture intempestifs\footnote{Et aussi, certains
+  disques externes s'éteignent une fois démontés.}
+
+Supposons que ma partition de sauvegarde soit toujours
+\ttt{/dev/sdd1}, qu'on la monte sur \ttt{/mnt} et qu'on veuille
+  sauvegarder \ttt{/home}. Alors, les trois étapes ci-dessus sont:
+\begin{enumerate}
+  \item \com{mount /mnt}\footnote{Je suppose qu'il y a la bonne ligne
+    dans \ttt{/etc/fstab}.  Sinon, on peut toujours faire:
+
+    \com{mount -t ext4 /dev/sdd1 /mnt}
+
+    tout aussi efficace.
+  }
+    
+  \item Synchroniser avec \ttt{rsync}.  La commande est:
+
+    \com{rsync -a \tirr delete /home/ /mnt/home/}
+
+    Les options utilisées:
+
+    \begin{itemize}
+      \item \ttt{-a}: \og archive\fg{}: conserver les droits  les
+        propriétaires et les groupes: bref faire une sauvegarde
+        exacte.
+      \item \ttt{\tirr delete}: effacer dans le répertoire de backup (ici
+        \ttt{/mnt}) tout ce qui n'est pas dans la source.
+    \end{itemize}
+
+    Options à considérer, en tout cas pour la mise au point:
+
+     \begin{itemize}
+     \item \ttt{-v}: \emph{verbose}, bavard.
+     \item \ttt{\tirr dry-run}: ne rien faire, ne rien copier, ne rien
+       effacer.
+     \end{itemize}
+
+     Donc, pour la mise au point, on peut vérifier que tout se passe
+     bien avec:
+
+     \com{rsync -av \tirr dry-run  \tirr delete /home/
+       /mnt/home/}\footnote{Il n'y a 
+       aucun problème à interrompre rsync avec Control+C}
+
+     \textdbend\textdbend
+
+     \textbf{Ne pas oublier les `''/'' \`A LA FIN pour les
+       répertoires:  \ttt{/home/}, \ttt{/mnt/home/}.}
+
+     \textdbend\textdbend
+       
+     
+  \item Éventuellement, démonter la partition de sauvegarde:
+
+    \com{umount /mnt}
+\end{enumerate}
+
+\subsection{Automatiser la sauvegarde}
+Le but est de faire une sauvegarde qui se déclenche automatiquement
+tous les jours.
+
+\subsubsection{Première étape: faire un \og script\fg}
+Un script, c'est un programme pour le shell.\label{save1}
+
+Pour cela on va créer un fichier qui contient les commandes vues précédemment
+(après avoir tout testé à la main!). Voici le fichier, qu'on peut
+  appeler par exemple \ttt{sauv.sh}.
+
+  \begin{center}
+  \begin{boxedminipage}{0.85\textwidth}
+\begin{verbatim}
+#!/bin/bash
+mount /mnt
+rsync -a --delete /home/ /mnt/home/ &>>/var/log/sauv.log
+umount /mnt
+\end{verbatim}
+  \end{boxedminipage}
+  \end{center}
+
+Commentaires:
+\begin{itemize}
+  \item La première ligne est là là pour dire que le script doit être exécuté
+    avec le shell \emph{bash}.
+  \item  \ttt{\&>>/var/log/sauv.log}. On se souvient de la
+    redirection des entrées-sorties; En fait il y a plusieurs sorties
+    numérotées 1 (normale), 2 (erreur). Le \ttt{\&} redirige toutes
+    les sorties; on les redirige vers \ttt{/var/log/sauv.log} et les deux ``>``
+    (\texttt{>>}) rallongent le fichier  \ttt{/var/log/sauv.log} (on
+    n'écrase pas le contenu de  \ttt{/var/log/sauv.log}).
+\end{itemize}
+
+Où installer ce fichier? par exemple dans \ttt{/etc/cron.daily}. Une
+fois créé avec l'éditeur de texte, on le rend exécutable (\com{chmod
+  +x /etc/cron.daily/sauv.sh}).
+
+
+Comment l'exécuter automatiquement ? C'est fait! Il tournera tous les
+jours où la machine fonctionnera (c'est parce qu'on l'a mis dans
+\ttt{/etc/cron.daily}).
+
+
+Il reste une chose à faire: le fichier  \ttt{/var/log/sauv.log} va
+grossir indéfiniment. Il faut le faire \og tourner\fg{} avec
+\ttt{logrotate}.
+
+On peut regarder les différents scripts présents dans
+\ttt{/etc/logrotate.d}
+et en déduire que celui ci devrait convenir (ce n'est pas très
+critique; \com{man logrotate} en dira plus sur les options du fichier):
+\begin{center}
+  \begin{boxedminipage}{0.85\textwidth}
+  \begin{verbatim}
+/var/log/sauv.log
+{
+	rotate 4
+	weekly
+	missingok
+	notifempty
+	compress
+	delaycompress
+	sharedscripts
+	endscript
+}
+\end{verbatim}
+  \end{boxedminipage}
+\end{center}
+
+Installer ce fichier sous le nom \ttt{sauve} par exemple dans
+\ttt{/etc/logrotate.d/}. 
+
+\subsection{Sauvegarder plusieurs répertoires}
+On peut assez facilement transformer le \emph{script} ci-dessus page
+\pageref{save1} pour 
+sauvegarder plusieurs répertoires. Il peut être intéressant de
+sauvegarder \ttt{/home}, mais aussi \ttt{/etc} par exemple, qui
+contient toute la configuration de la machine. Pour cela, on va un peu
+programmer le shell (car le shell est un langage de programmation).
+
+\subsubsection{Un premier script}
+Fabriquons\footnote{Il faut utiliser un éditeur de texte, genre
+  \ttt{nano} ou autre.} un fichier de nom \ttt{essai1.sh} (le nom n'a
+pas d'importance):
+\begin{center}
+\begin{boxedminipage}{0.85\textwidth}
+\begin{verbatim}
+#!/bin/bash
+for d in /home/ /etc/;do
+echo $d
+done
+\end{verbatim}
+\end{boxedminipage}
+\end{center}
+Nous avons déjà rencontré la première ligne. \`A la deuxième ligne nous
+commencons une boucle; la variable \ttt{d}\footnote{On aurait pu
+  choisir un nom complètement différent.} va contenir successivement
+les chaînes de caractères \ttt{/home/} et \ttt{/etc/}.  \`A la
+troisième ligne, on écrit le contenu de \ttt{d} (le shell fait une
+différence entre une variable (\ttt{d} ici) et son contenu qui ici est
+\ttt{\$d}). Enfin la dernière ligne termine la boucle \ttt{for}.
+Une fois le fichier écrit, rendons le exécutable:
+
+\com{chmod +x essai.sh}
+
+et lançons la commande:
+
+\com{./essai.sh}.
+On voit s'imprimer successivement  \ttt{/home/} et \ttt{/etc}.
+\subsubsection{Deuxième étape} On réécrit le script vu page
+\pageref{save1}:
+
+\begin{center}
+  \begin{boxedminipage}{0.85\textwidth}
+\begin{verbatim}
+#!/bin/bash
+mount /mnt
+for d in /home/ /etc/;do
+rsync -a --delete $d /mnt/$d &>>/var/log/sauv.log
+umount /mnt
+\end{verbatim}
+  \end{boxedminipage}
+  \end{center}
+Et voilà: \ttt{d} contenant succesivement \ttt{/home/} et \ttt{/etc/},
+\ttt{/mnt/\$d} vaudra succesivement \ttt{/mnt/home/} et
+\ttt{/mnt/etc/}, ce qui fera bien ce qu'on cherche\footnote{
+  rsync crée automatiquement le répertoire de destination s'il
+  n'existe pas.}. Notons que
+\ttt{/etc/} ne subissant que peu de modifications chaque jour, il n'y
+aura pratiquement aucun travail à effectuer pour le sauvegarder, \emph{après}
+la première sauvegarde.
+
+\subsection{Synchronisation à distance}
+\ttt{Rsync} permet des synchronisations de répertoires entre machines
+distantes, à condition qu'on puisse établir une connexion cryptée
+(\ttt{ssh}) entre les machines.
+
+Supposons que je dispose d'un compte utilisateur \ttt{untel}  sur la
+machine  distante \ttt{mm.xxx.yy}. Je synchroniserai
+le répertoire distant \ttt{/sauv/} (par exemple) avec le
+répertoire \ttt{/home/} de ma machine locale avec la commande:
+
+\com{rsync -a \tirr delete -e ssh /home/ untel@mm.xxx.yy:/sauv/}
+
+il peut être bien utile d'ajouter l'option \ttt{-z} pour compresser
+les données transférées et limiter la bande passante sur le réseau:
+
+\com{rsync -az \tirr delete -e ssh /home/ untel@mm.xxx.yy:/sauv/}
+
+Une telle sauvegarde est absolument sûre, car la liaison est
+cryptée\footnote{Sur la machine \ttt{mm.xxx.yy}, on peut aussi faire
+  en sorte que le répertoire \ttt{/sauv/} soit crypté, mais ce n'est
+  pas du ressort de \ttt{rsync}.}
+

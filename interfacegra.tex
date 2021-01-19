@@ -1,0 +1,129 @@
+\section{Interface graphique, bureau etc.}
+Comment fonctionnent les systèmes de bureau, d'interfaces graphiques
+que nous utilisons? C'est assez complexe, ne serait-ce que parce qu'on
+hérite d'un passé assez lointain (les années 80). La complexité de ces
+outils outrepasse celle du noyau Linux. Et puis depuis les débuts de
+ces développements l'environnement matériel a beaucoup changé: les GPU
+n'implantaient pas les fonctionalités actuelles. 
+
+
+Une remarque préalable: vous pouvez utiliser une machine Linux sans
+interface graphique. Tapez \ttt{CNTRL+Alt F1} et les plus anciens se
+retrouveront face à quelque chose qui leur rappellera le DOS.
+
+Linux offre plusieurs environnements de bureau permettant tous de
+gérer des fenêtres des menus, des éléments graphiques etc. Citons:
+Gnome, Xfce, Mate, Ukui, KDE, mais il en existe d'autres.
+
+Schématiquement, un système de bureau comporte au moins 3 couches,
+chacune incarnée par une ou plusieurs bibliothèques:
+
+\begin{enumerate}
+\item Un niveau \textsl{bas} qui sait créer des fenêtres, interagir
+  avec le clavier et la souris du coté de l'utilisateur et, du coté
+  machine avec des dispositifs gérant directement
+  l'affichage. actuellement ce
+  niveau peut être incarné par deux logiciels:
+
+  \begin{enumerate}
+  \item X11, \textsl{The X-Window system}.
+  \item Wayland.
+  \end{enumerate}
+
+\item Un niveau intermédiaire, capable de gérer des boutons, des menus
+  déroulants, le couper-coller, etc. C'est le plus souvent la
+  bibliothèque GTK, développée à l'origine pour le logiciel de
+  manipulation d'images GIMP.
+
+\item Le niveau supérieur: c'est gnome, Xfce etc, etc.  mais en fait
+  c'est un peu plus compliqué: Xfce par exemple (et certainement les
+  autres aussi s'interfacent avec X11 et GTK.
+\end{enumerate}
+
+\subsection{X11 ou Wayland?}
+X11 est ancien (le développement a commencé en 1984), lourd et réputé
+plus lent que des outils équivalents sous Windows et MacOs. D'où
+l'idée de développer quelque chose de plus léger et de plus
+moderne. Il y a eu plusieurs propositions et il semble que Wayland
+l'emporte.
+
+Certaines distributions utilisent maintenant Wayland (Debian),
+d'autres garde X11 (Ubuntu). Il faut savoir que pas mal d'applications
+s'interfacent directement avec X11 et que, pour les faire fonctionner
+sous Wayland, il a fallu développer... un serveur X11 sous Wayland, au
+moins pour une période transitoire.
+ X11 permet aussi l'affichage déporté (un programme tourne sur une
+ machine, l'affichage est déporté sur une autre): l'intéret pour cette
+ fonctionnalité diminue: on a longtemps utilisé des terminaux X,
+ désormais obsolètes, et un outil comme x2go permet un bien meilleur
+ affichage à distance (il est basé sur les techniques de compression
+ d'images utilisées pour la télévision numérique).
+
+ Regardons un peu le cas Xfce (les autres sont à coup sûr peu
+ différents):
+
+ La commande:
+
+ \com{ps aux|grep -i xfce}
+
+ liste plusieurs processus. C'est donc que:
+ \begin{itemize}
+ \item Xfce n'est pas monolithique.
+ \item Il va obligatoirement que ces processus communiquent entre eux.
+ \end{itemize}
+
+
+ Parmi ces processus, on peut regarder 
+ \ttt{xfce4-session} qui est sûrement important. La commande
+
+ \com{ldd /usr/bin/xfce4-session}
+
+ liste 82 bibliothèques! Explicitons en quelques unes:
+
+ \begin{itemize}
+ \item \ttt{libX11}: c'est bien sûr le fameux X11. Notons aussi
+   d'autres bibliothèques qui ensemblent forment X11: libXrender,
+   libXext etc. (tout ce dont le nom commence par libX).
+ \item \ttt{libgtk}: définit principalement des \og widgets\fg{}
+   (boutons, menus etc.).
+ \item \ttt{libgdk}: \og en dessous \fg{} de \ttt{gtk}. C'est
+   l'intermédiaire entre \ttt{gtk} et le système de fenêtrage (X11 ou
+   Wayland ou...).
+ \item \ttt{libpango}: gestion des polices de caractères.
+ \item \ttt{libcairo}: dessins bi-dimensionnels, vectoriels. Utilise
+   l'accélération graphique, si c'est possible.
+ \item \ttt{libwayland}: la bibliothèque est présente bien que la
+   machine utilise x11.
+ \item \ttt{libdbus}: c'est une bibliothèque de communication. On en
+   parle ci-dessous.
+ \end{itemize}
+\subsection*{Dbus}
+Dbus est un \emph{bus logiciel}. Citons Wikipédia: \og \emph{D-Bus permet à
+des programmes clients de s'enregistrer auprès de lui, afin d'offrir
+leurs services aux autres programmes. Il leur permet également de
+savoir quels services sont disponibles. Les programmes peuvent aussi
+s'enregistrer afin d'être informés d'événements signalés (parce que
+gérés) par le noyau, comme le branchement d'un nouveau
+périphérique}\fg{}
+(voir figure \ref{dbus}).
+
+\begin{figure}
+  \begin{center}
+  \begin{tikzpicture}[thick,scale=0.6, every node/.style={scale=0.6}]
+\node (A) [cylinder, shape border rotate=0, draw,minimum height=12cm,minimum width=1cm] {Dbus};
+\draw[<->] (-4,0.5) -- (-4,2);
+\draw (-5,2) rectangle (-3,4)   node[midway]{Processus};
+\draw[<->] (0,0.5) -- (0,2);
+\draw (-1,2) rectangle (1,4)   node[midway]{Processus};
+\draw (2.5,-3.5) circle(1.5) node {Noyau};
+\draw[->] (2.5,-2) -- (2.5,-0.5);
+  \end{tikzpicture}
+  \end{center}
+  \caption{Dbus}
+  \label{dbus}
+\end{figure}
+
+Il faut mentionner le projet \textsf{freedesktop.org}\cite{fd} qui
+vise à l'interopérabilité des différents environnements de bureau, en
+définissant des standards et en développant des bibliothèques
+logicielles  (Cairo, par exemple).

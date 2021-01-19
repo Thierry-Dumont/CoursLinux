@@ -3,18 +3,17 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage[a4paper]{geometry}
-\usepackage{graphicx,caption}
+\usepackage{graphicx,caption,subcaption}
 \usepackage{xcolor,lmodern,footmisc,boxedminipage}
 \usepackage{manfnt,enumitem,pifont,url}
 %\usepackage[linktocpage=true]{hyperref}
 \usepackage{microtype}
-
+\usepackage{appendix,tikz}
+\usetikzlibrary{shapes}
+\usepackage[citestyle=numeric,bibstyle=numeric]{biblatex}
+\addbibresource{a.bib}
 \title{Unix au temps du couvre-feu (3)\\Compléments et exercices}
 \author{Thierry Dumont}
-
-%\definecolor{byzantine}{rgb}{0.5, 0.0, 1.0}
-%\newcommand{\com}[1]{\textcolor{byzantine}{\texttt{#1}}}
-%\newcommand{\comc}[2]{\textcolor{byzantine}{\texttt{#1}
 %
 \newcommand{\com}[1]{\texttt{cmd>#1}}
 \newcommand{\comc}[2]{\texttt{>#1} \underline{#2}}
@@ -22,6 +21,9 @@
 \newcommand{\exos}{\textbf{\underline{Exercices}:}}
 \newcommand{\exx}[1]{\underline{\textbf{#1}}}
 \newcommand{\ttt}[1]{\texttt{#1}}
+\newcommand{\sff}{système de fichiers}
+\newcommand{\sffs}{systèmes de fichiers}
+\newcommand{\tirr}{\texttt{-{}-}}
 %
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
@@ -42,6 +44,21 @@
 
 \maketitle
 \tableofcontents
+\centerline{
+  \begin{minipage}{0.65\textwidth}
+    \textsl{Dans la suite la syntaxe:}
+
+    \begin{center}
+      \com{commande arguments}
+    \end{center}
+
+    \textsl{désignera
+une commande (à taper dans le shell); le \og prompt\fg{}, c'est à dire
+le début de la ligne de commande peut varier d'une configuration à l'autre;
+} \com{} \textsl{représente ce prompt et n'est pas à taper.}
+  \end{minipage}
+}
+
 \input c11
 \input c21
 % cours3
@@ -50,7 +67,21 @@
 \input root
 \input shell
 \input caches
-
+\input commandes
+% cours 4
+\input libs
+\input interfacegra
+\input liens
+\input filesystem
+\input sauvegarde
+~
+\begin{appendices}
+  \appendixpage
+  
+  \input lu
+   \input cow
+  \input btree
+\end{appendices}
 \begin{flushright}
   \tiny Document composé en \LaTeX.
 \end{flushright}

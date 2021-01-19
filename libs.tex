@@ -1,0 +1,104 @@
+\section{Bibliothèques (libraries)}
+
+Une bibliothèque est un ensemble  de pièces de programmes qui peuvent
+être réutilisées dans un programme. L'intérêt est qu'elles fournissent
+des fonctions, des structures qui peuvent être utilisées par
+différents programmes (voir la figure \ref{bib} et, par exemple, la
+référence  \cite{wplib}).
+
+Exemple: la bibliothèque \ttt{libc} (plus exactement \ttt{glibc})
+fournit un grand nombre de fonctions plutôt basiques; une fonction
+comme \ttt{time} qui permet de récupérer dans un programme l'heure,
+telle qu'elle est connue par la machine. Un comprend donc l'intérêt a
+avoir une seule version de cette méthode.
+
+\subsection{Bibliothèques statiques et bibliothèques dynamiques}
+\begin{itemize}
+  \item Avec les bibliothèques statiques, les fonctions dont un
+    programme a besoin sont prises dans les bibliothèques au moment de
+    la construction du programme (édition des liens). Le fichier du
+    programme (exemple  \ttt{/usr/bin/firefox}) contient à peu près
+    tout ce qu'il faut pour faire tourner le programme.
+
+  \item avec les bibliothèques dynamiques, on va charger en mémoire
+    des fonctions dont on a besoin au moment de leur utilisation.
+\end{itemize}
+
+\subsubsection*{Quelles sont les bibliothèques dynamiques utilisées
+  par un programme?}
+
+La commande est \ttt{ldd}. Exemples:
+
+\begin{itemize}
+\item \com{ldd /usr/bin/firefox}. Réponse:
+
+  \ttt{n'est pas un exécutable dynamique}. Donc on utilise des
+  bibliothèques statiques.
+
+\item \com{ldd /bin/ls}
+  
+\begin{verbatim}
+  	linux-vdso.so.1 (0x00007fff9af8b000)
+	libtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0x00007ff135523000)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007ff13551d000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ff135333000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007ff1356b9000)
+moi@kepler:/2/home/moi/CoursLinux/Cours/Cours4$ man ldd
+moi@kepler:/2/home/moi/CoursLinux/Cours/Cours4$ ldd /bin/ls
+	linux-vdso.so.1 (0x00007ffd3351f000)
+	libselinux.so.1 => /lib/x86_64-linux-gnu/libselinux.so.1 (0x00007fdeb6035000)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fdeb5e4b000)
+	libpcre2-8.so.0 => /lib/x86_64-linux-gnu/libpcre2-8.so.0 (0x00007fdeb5dbb000)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fdeb5db5000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fdeb60c0000)
+	libpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fdeb5d93000)
+
+\end{verbatim}
+\
+On voit entre autres, que l'on utilise la \ttt{libc}
+(\ttt{libc.so.6}), ce qui est normal, car cette bibliothèque contient
+beaucoup d'utilités de base.
+\end{itemize}
+
+Les intérêts des bibliothèques sont nombreux: ne pas redévelopper ce
+qui existe, et utiliser des ``services'' partagés entre le plus grand
+nombre de programmes améliore la fiabilité de ces services.
+
+On va voir d'autres bibliothèques quand on va étudier les interfaces graphiques.
+\begin{figure}
+  \input libstikz
+  \caption{Programme et bibliothèque}
+  \label{bib}
+\end{figure}\medskip
+
+\begin{boxedminipage}{0.95\textwidth}\label{solve}
+\begin{minipage}{0.48\textwidth}
+  Un autre exemple: résoudre le système d'équations linéaires ci-contre.
+
+  On peut évidemment coder ça \textsl{à la main},  mais le mieux est
+  d'utiliser une bibliothèque libre (en pratique: \ttt{lapack}): plus
+  de 30 ans 
+  d'expérience, fiabilité et performances
+  imbattables
+
+  Intéressé(e) par cet exemple? voir en appendice
+    page \pageref{lu}. 
+\end{minipage}
+\begin{minipage}{0.48\textwidth}
+\begin{alignat*}{4}
+   2x & {}+{} &  y & {}+{} & 3z & {}={} & 10 \\
+    x & {}+{} &  y & {}+{} &  z & {}={} &  6 \\
+    x & {}+{} & 3y & {}+{} & 2z & {}={} & 13
+\end{alignat*}
+\end{minipage}
+\end{boxedminipage}
+
+\subsubsection*{Nommage des bibliothèques dynamiques}
+Pour la \ttt{libc} qui est un bon exemple, on voit:
+
+\ttt{/usr/lib32/libc.so.6}
+
+\begin{itemize}
+\item L'extension \ttt{so} est celle des bibliothèques dynamiques.
+\item Le  \ttt{.6} est un numéro de version.
+\end{itemize}

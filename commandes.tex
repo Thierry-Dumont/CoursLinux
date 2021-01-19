@@ -1,0 +1,81 @@
+\section{Une liste de commandes Unix}
+\begin{tabular}{|l|l|l|l|}
+  \hline
+ 
+  Commande& Objet& Exemple &Options importantes, remarques\\
+  \hline
+   \hline
+  diff & Différences entre fichiers&\com{diff a b}& utiliser entre
+  fichiers texte\\
+  \hline
+  file& Devine le type de fichier& \com{file *.pdf}&\\
+  \hline
+  mv& Déplace, renomme (voir plus bas)&&\\
+  \hline
+  sort&Trier un fichier &\com{sort fich}& ajouter \ttt{-n} pour un tri
+  numérique\\
+  \hline
+  touch&modifie la date ou crée un fichier vide&\com{touch toto}&\\
+  \hline
+  chmod&change les droits (voir plus bas)&&\\
+  \hline
+  which& trouver une commande dans le PATH&\com{which uname}&\\
+  \hline
+  whoami& votre login&&\\
+  \hline
+  uptime&temps d'activité (depuis le reboot)&&\\
+  \hline
+  date&date et heure&&plein d'options (man date)\\
+  \hline
+  df& espace disque utilisé et libre&&\com{df -h}, sortie \og
+  humaine\fg\\
+  \hline
+\end{tabular}\medskip
+
+\paragraph{Quelques détails:}
+\begin{itemize}
+\item \ttt{mv}: déplacer ou renommer. C'est assimilé à une écriture,
+  et donc il faut avoir le droit d'\emph{écrire} sur l'objet qui peut
+  être un fichier ou un répertoire.
+
+  Exemples:
+  \begin{itemize}
+    \item \com{mv toto /tmp} déplace le fichier ou le répertoire
+      \ttt{toto} dans \ttt{/tmp} (il faut aussi avoir le droit
+      d'écrire dans le répetoire but (ici, avec \ttt{/tmp}, c'est le cas).
+    \item \com{mv toto /tmp/tutu}, on déplace \ttt{toto} dans
+      \ttt{/tmp} où il s'appelera \ttt{tutu}.
+    \item \com{mv toto machin}. Le déplacement se réduit à un
+      changement de nom.
+  \end{itemize}
+\item \ttt{chmod}: change les droits d'un fichier ou d'un
+  répertoire. Il y a plusieurs façons de procéder, une assez facile,
+  l'autre moins!
+  \begin{itemize}
+    \item Pour changer les droits du propriétaire, l'option est
+      \ttt{u}, c'est \ttt{g} pour celle du groupe et \ttt{o} pour
+      le reste du monde. Quelques exemples:
+      \begin{enumerate}
+      \item \com{chmod u+w toto},
+      \item \com{chmod u+x g+x o-w toto},
+      \item On peut \og factoriser\fg{} les ordres:
+        \com{chmod ug+x o-w toto} par exemple.
+      \item La méthode \og dure\fg{}: on considère les 9 digits
+        possibles \ttt{xxxyyyzzz}; on met un 1 quand on veut que le
+        droit soit ouvert, 0 sinon; ainsi, pour obtenir
+        \ttt{rw-r-----}, ceci correspond à: \ttt{110 100 000}. Bien
+        maintenant, il s'agit de 3  nombres binaires; il faut les calculer
+        en base 10:
+        \begin{enumerate}
+        \item \ttt{110}= $1\times 4 + 1 \times 2 +0 =6$,
+        \item \ttt{100}= $1\times 4 + 0 \times 2 +0 = 4$
+        \item \ttt{000}= $0$.
+        \end{enumerate}
+        
+        Et la commande est \com{chmod 640 toto}.
+
+        Amusant, non?
+        (excellent exercice de calcul mental).
+      \end{enumerate}
+  \end{itemize}
+\end{itemize}
