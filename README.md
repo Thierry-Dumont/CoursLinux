@@ -11,18 +11,13 @@ Pour compiler le document:
 
 * Installer une distribution LaTeX (TeXLive sous Linux).
 
-* Vous avezbesi de biber.
+* Vous avez besoin de biber.
 
-Pour compiler:
+Ensuite, sur une machine Linux, tapez la commande :
 
-* xelatex cours.tex
+* ./compile.sh
 
-* biber cours
-
-* xelatex cours.tex
-
-Le résultat est un fuvhier cours.pdf
-
+Le résultat est un fichier cours.pdf, dans le répertoire PDF/
 
 
   
