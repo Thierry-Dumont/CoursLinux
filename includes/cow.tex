@@ -1,11 +1,11 @@
-\section{Le COW (Copy On Write)}
+\section{Le COW (Copy On Write)}\label{meuh}
 L'idée de base est:  copier c'est
 lent et ça coûte de la place. On
-ne va donc copier (un fichier) que 
+ne va donc copier (un fichier ou toute autre chose) que 
 quand c'est nécessaire. Par exemple, si deux utilisateurs (deux
 processus) accèdent à un fichier uniquement en lecture, pourquoi le
 copier?
-En revanche si un des deux processus a envie d'écrire sur le fichier,
+En revanche si l'un des deux processus veut écrire sur le fichier,
 là il faut faire une copie pour donner à chacun son propre
 fichier. Comment implanter ça? En voici une idée\footnote{Ce n'est pas sans
 rapport avec les \og liens hard\fg{}, cf. page \pageref{hardlink}.}:
@@ -20,11 +20,11 @@ rapport avec les \og liens hard\fg{}, cf. page \pageref{hardlink}.}:
     données. Mais en plus les données contiennent un compteur de
     références qui contient le nombre de pointeurs les désignant. Ce
     compteur qui valait 1 à l'origine vaut maintenant 2.
-  \item Imaginons que le premier processus veuille écrire sur le
+  \item Imaginons qu'un des  processus veuille écrire sur le
     fichier; alors (voir figure \ref{cow3}):
     \begin{enumerate}
     \item On en fait une copie (c'est là le \og copy on write\fg).
-    \item On a deux versions séparées, qui on toutes les deux un
+    \item On a deux versions séparées, qui ont toutes les deux un
       compteur de références égal à 1.
     \end{enumerate}
 \end{enumerate}
@@ -36,21 +36,27 @@ rapport avec les \og liens hard\fg{}, cf. page \pageref{hardlink}.}:
 
  \subsection*{Applications:}
 \begin{itemize}
-  \item Les systèmes de \og snapshots\fg{} (instantanés)  des file
-    systems Zfs et 
-    Btrfs:
+  \item Les systèmes de \og snapshots\fg{} (instantanés)  des \sffs{}
+    \ttt{Zfs} et \ttt{Btrfs}. la technique est à peu près celle-ci:
 
     Pour faire un snapshot de \ttt{/home} (par exemple), on crée un
     répertoire de nom \ttt{home-12h30}, par exemple; on copie tous les
     pointeurs de \ttt{/home} dans \ttt{home-12h30}, ce qui peut être
     fait très rapidement\footnote{Il faut sûrement être un peu plus
       astucieux. Par exemple, appliquer la même technique... aux
-      pointeurs?}. Après cela, on a dans le nouveau répertoire 
+      pointeurs?}. Après cela, on a dans le nouveau répertoire \ttt{home-12h30}
     une \emph{vue} de \ttt{/home} tel qu'il était quand on a fait le
     snapshot, et cela pour un \og prix\fg{} très faible. \ttt{home} va
     continuer à évoluer et, si on de touche pas à \ttt{home-12h30}, celui-ci
     va conserver l'état de \ttt{home} quand on a fait le \emph{snapshot}.
-    
+  \item Cette technique d'instantanées est aussi implantée dans LVM
+    sous Linux (voir \cite{lvm}).
+  \item Un \og snapshot\fg{} n'est pas une sauvegarde! Mais
+    sauvegarder un  \og snapshot\fg{} permet de faire une sauvegarde
+    d'un répertoire dans l'état exact où il était au début de la
+    sauvegarde.
+  \item \ttt{Btrfs} utilise aussi un système de \og COW\fg{} pour
+    remplacer le \emph{journal} des \sffs{} comme \ttt{ext4}.
 \end{itemize}
 
 \begin{center}

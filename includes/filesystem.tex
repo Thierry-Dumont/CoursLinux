@@ -17,7 +17,7 @@ permet d'obtenir le numéro d'inode de \ttt{objet} (ce qui ne sert pas
   Mais les  \sffs, s'ils montrent au système le même type de
   structure (arborescence de fichiers et répertoires), ne stockent pas 
   tous en interne les données de la même façon (une bibliothèque est
-  associée à chaque type de  \sff), d'où des fonctionalités et des
+  associée à chaque type de  \sff), d'où des fonctionnalités et des
   performances différentes.
   Citons, pour Linux:
 
@@ -27,7 +27,8 @@ permet d'obtenir le numéro d'inode de \ttt{objet} (ce qui ne sert pas
       Les premières versions (1 et 2) ont été réalisées par Remy
       Card, intervenant fréquent aux premières Journées du Logiciel
       Libre à Lyon  \cite{rcard}.
-      C'est le  \sff{} standard sous Linux.
+      Depuis  \ttt{ext2}, ce sont les  \sffs{} standards sous Linux
+      (actuellement, c'est \ttt{ext4}).
 
     \item \ttt{Jfs}: (IBM; peu gourmand en ressources).
     \item \ttt{ReiserFS}: semble abandonné.
@@ -61,11 +62,13 @@ permet d'obtenir le numéro d'inode de \ttt{objet} (ce qui ne sert pas
       obtenir une \emph{vue} du  \sff{} tel qu'il est  à
      un instant donné, en le
       laissant évoluer par ailleurs. On
-      trouvera en annexe une description (à coup sûr simplifiée) de la
+      trouvera en annexe page \pageref{meuh} une description (à coup
+      sûr simplifiée) de la 
       technique utilisée (le COW).
       \item \ttt{Btrfs} et  \ttt{ReiserFS} utilisent tous les deux une
         représentation des données sous forme d'\emph{arbre binaire
-          équilibré} (\emph{B-Tree}), décrite aussi en annexe, qui assure une
+          équilibré} (\emph{B-Tree}), décrite aussi en annexe page
+        \pageref{btree}, qui assure une 
         très grande vitesse de lecture.
   \end{itemize}
 
@@ -89,7 +92,7 @@ permet d'obtenir le numéro d'inode de \ttt{objet} (ce qui ne sert pas
       qui permet de \emph{rejouer} une E/S qui aurait été interrompue.
     \item \ttt{ext4} (2008): la limite de la taille est portée à
       $2^{60}$ (!) octets. Une autre avantage est de réduire encore la
-      fragmentation. C'est actuellement le \sff{} sous la
+      fragmentation. C'est actuellement le \sff{} standard sous la
       quasi totalité des distributions Linux. 
   \end{itemize}
   
@@ -120,7 +123,7 @@ exemple\cite{btrfs}).
 \begin{enumerate}
 \item Un \sff{} s'installe toujours dans une \emph{partition.} Même si
   le périphérique sur lequel vous allez installer le \sff{} ne va
-  en contenir qu'un, vous devez partitionner.
+  en contenir qu'un, vous devez partitionner (créer au moins une partition).
 \item On crée ensuite le \sff{} en utilisant la commande \ttt{mkfs}
   qui installe dans la partition la structure de donnée nécessaire,
   prête à recevoir vos fichiers et répertoires.
@@ -194,9 +197,10 @@ C'est très simple. Mes partitions s'appellent par exemple
 
 Monter un \sff{} consiste à \emph{accrocher} un \sff{} à un
 répertoire existant 
-dans l'arborescence. Je peux utiliser un répertoire \emph{existant}
+dans l'arborescence. On peut utiliser un répertoire \emph{existant}
 (attention, je vais cacher ce qui est éventuellement dedans), ou en
-créer un. Supposons que j'utilise \ttt{/mnt}. La commande est alors:
+créer un. Supposons que j'utilise \ttt{/mnt} comme point de
+montage. La commande est alors: 
 
 \com{mount -t ext4 /dev/sdd1 /mnt}
 
@@ -242,7 +246,9 @@ utiliser le fichier \ttt{/etc/fstab}, et donc le modifier\footnote{
   }.
 
 \ttt{/etc/fstab} contient la description de tout ce qui doit ou peut
-être monté, en précisant quoi doit être monté et où.
+être monté, en précisant quoi doit être monté et où. L'utilisation
+principale, mais pas exclusive, consiste à indiquer au système ce qu'il
+foit monter au boot.
 
 \subsubsection{\ttt{fstab}, à l'ancienne}
 
@@ -260,7 +266,7 @@ Exemple:
 Le premier champ est ce qu'on monte, le deuxième où on le monte et le
 troisième le type de \sff{}. On voit ainsi que la partition
 \ttt{/dev/sda1}, formatée en \ttt{vfat} sert pour le boot (c'est
-  uefi). Passons sur le champ ``dump'', le dernier champ dit l'ordre
+  \ttt{uefi}). Passons sur le champ ``dump'', le dernier champ dit l'ordre
   dans lequel les \sffs{} sont vérifiés au boot.
   Les options sont nombreuses, ici:
   \begin{itemize}

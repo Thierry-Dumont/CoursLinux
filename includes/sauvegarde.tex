@@ -16,25 +16,19 @@ puissante\footnote{\ttt{rsync} n'est pas forcément installé par
   ou l'équivalent pour l'installer.}; à priori
 c'est une simple copie d'un répertoire vers un autre, par exemple:
 
-\com{rsync /home/ /mnt/home/}
+\com{rsync -a /home/ /mnt/home/}
 
 va copier le répertoire \ttt{/home/} vers \ttt{/mnt/home/}. Mais
 attention, \emph{on ne va copier que ce qui n'est pas déjà présent dans}
 \ttt{/mnt/home/}, \emph{ou ce qui est déjà présent dans} \ttt{/mnt/home/}
  {mais a été modifié dans}
 \ttt{/home/}.  Le but est de synchroniser (d'où le nom de la
-commande) les deux répertoires en  faisant le minimum de travail.
-
-Mais \ttt{rsync} a plein d'options:
+commande) les deux répertoires en  faisant le minimum de
+travail. L'option \ttt{-a} est nécessaire (on conserve les droits, les
+propriétaires, les groupes des objets). Attention, les chemins (ici
+\ttt{/home/} et  \ttt{/mnt/home/} doivet avoir un \ttt{/} à la fin.
 
 \begin{itemize}
-\item On peut déjà ajouter \ttt{-a} (archive):
-  
-  \com{rsync -a /home/ /mnt/home/}
-
-  avec cette option on conserve tous les droits, les propriétaires et
-  les groupes des fichiers et répertoires.
-
 \item On peut aussi ajouter \ttt{\tirr delete} (oui, il y a bien
   deux ``\ttt{-}''): 
 
@@ -55,8 +49,8 @@ Mais \ttt{rsync} a plein d'options:
       rapidement beaucoup trop bavard, mais c'est très utile pour la
       mise au point!
 
-    \item \texttt{\tirr dry-run}: ne transfère rien, mais fait juste un
-      test.
+    \item \texttt{\tirr dry-run}: ne transfère rien, mais, associé à
+      \ttt{-v}  permet de voir ce qui se passerait sans l'option.
   \end{itemize}
 
   Avant toute copie, ou la première fois il est \large{vraiment}
@@ -88,7 +82,7 @@ Supposons que ma partition de sauvegarde soit toujours
 \ttt{/dev/sdd1}, qu'on la monte sur \ttt{/mnt} et qu'on veuille
   sauvegarder \ttt{/home}. Alors, les trois étapes ci-dessus sont:
 \begin{enumerate}
-  \item \com{mount /mnt}\footnote{Je suppose qu'il y a la bonne ligne
+  \item \com{mount /mnt}\footnote{Là, je suppose qu'il y a la bonne ligne
     dans \ttt{/etc/fstab}.  Sinon, on peut toujours faire:
 
     \com{mount -t ext4 /dev/sdd1 /mnt}
@@ -99,16 +93,7 @@ Supposons que ma partition de sauvegarde soit toujours
   \item Synchroniser avec \ttt{rsync}.  La commande est:
 
     \com{rsync -a \tirr delete /home/ /mnt/home/}
-
-    Les options utilisées:
-
-    \begin{itemize}
-      \item \ttt{-a}: \og archive\fg{}: conserver les droits  les
-        propriétaires et les groupes: bref faire une sauvegarde
-        exacte.
-      \item \ttt{\tirr delete}: effacer dans le répertoire de backup (ici
-        \ttt{/mnt}) tout ce qui n'est pas dans la source.
-    \end{itemize}
+    
 
     Options à considérer, en tout cas pour la mise au point:
 
@@ -128,7 +113,8 @@ Supposons que ma partition de sauvegarde soit toujours
      \textdbend\textdbend
 
      \textbf{Ne pas oublier les `''/'' \`A LA FIN pour les
-       répertoires:  \ttt{/home/}, \ttt{/mnt/home/}.}
+       répertoires:  \ttt{/home/}, \ttt{/mnt/home/} (et non pas
+       \ttt{/home} ni \ttt{/mnt/home}).} 
 
      \textdbend\textdbend
        
@@ -169,7 +155,8 @@ Commentaires:
     numérotées 1 (normale), 2 (erreur). Le \ttt{\&} redirige toutes
     les sorties; on les redirige vers \ttt{/var/log/sauv.log} et les deux ``>``
     (\texttt{>>}) rallongent le fichier  \ttt{/var/log/sauv.log} (on
-    n'écrase pas le contenu de  \ttt{/var/log/sauv.log}).
+    n'écrase pas le contenu de  \ttt{/var/log/sauv.log}, ce qui serait
+    le cas avec un seul \ttt{>}).
 \end{itemize}
 
 Où installer ce fichier? par exemple dans \ttt{/etc/cron.daily}. Une
@@ -236,7 +223,11 @@ done
 Nous avons déjà rencontré la première ligne. \`A la deuxième ligne nous
 commencons une boucle; la variable \ttt{d}\footnote{On aurait pu
   choisir un nom complètement différent.} va contenir successivement
-les chaînes de caractères \ttt{/home/} et \ttt{/etc/}.  \`A la
+les chaînes de caractères \ttt{/home/} et \ttt{/etc/}. Tout de qui est
+compris entre la ligne \ttt{for...; do} et la ligne \ttt{done} est
+effectué successivement avec les valeurs \ttt{/home/} et \ttt{/etc/}
+stockés dans la 
+  variable \ttt{d}. \`A la
 troisième ligne, on écrit le contenu de \ttt{d} (le shell fait une
 différence entre une variable (\ttt{d} ici) et son contenu qui ici est
 \ttt{\$d}). Enfin la dernière ligne termine la boucle \ttt{for}.
@@ -258,11 +249,12 @@ On voit s'imprimer successivement  \ttt{/home/} et \ttt{/etc}.
 mount /mnt
 for d in /home/ /etc/;do
 rsync -a --delete $d /mnt/$d &>>/var/log/sauv.log
+done
 umount /mnt
 \end{verbatim}
   \end{boxedminipage}
   \end{center}
-Et voilà: \ttt{d} contenant succesivement \ttt{/home/} et \ttt{/etc/},
+Et voilà: \ttt{d} contiendra succesivement \ttt{/home/} et \ttt{/etc/},
 \ttt{/mnt/\$d} vaudra succesivement \ttt{/mnt/home/} et
 \ttt{/mnt/etc/}, ce qui fera bien ce qu'on cherche\footnote{
   rsync crée automatiquement le répertoire de destination s'il

@@ -1,5 +1,5 @@
 \section{Les liens}
-Les liens sont des types d'objets définis sous Unix. Ils permettent
+Les liens sont  définis sous Unix. Ils permettent
 d'obtenir une vue d'un fichier ou d'un répertoire \og comme s'il était
 là\fg. Un lien utilise très peu de ressources.
 
@@ -15,7 +15,8 @@ lrwxrwxrwx   1 root root     9 avril 27  2020 lib32 -> usr/lib32
 lrwxrwxrwx   1 root root     9 avril 27  2020 lib64 -> usr/lib64
 lrwxrwxrwx   1 root root    10 avril 27  2020 libx32 -> usr/libx32
 \end{verbatim}
-\ttt{lib} est un \emph{lien symbolique} vers le répertoire
+le \ttt{l} en tête indique qu'on a affaire à un lien; par exemple,
+\ttt{lib} est un \emph{lien symbolique} vers le répertoire 
   \ttt{usr/lib}.
 
   On peut vérifier ensuite que les commandes  \com{ls /lib} et
@@ -48,9 +49,14 @@ lrwxrwxrwx   1 root root    10 avril 27  2020 libx32 -> usr/libx32
     \end{center}
     
   \end{itemize}
+
+  Les liens symboliques sont assez agréables; ils permettent de créer des
+  sortes d'alias, et puis de contourner un peu la rigidité de
+  l'aborescence de fichiers: un lien peu pratiquement pointer de
+  n'importe quel endroit vers un autre.
       
 Il existe d'autres sortes de liens, les liens \og hard\fg, assez peu
-intéressants pour les utilisateurs:\label{hardlink}
+intéressants en pratique pour les utilisateurs:\label{hardlink}
 \begin{itemize}
 \item Ils ne peuvent pointer que vers des fichiers.
 \item Ils équipent le fichier pointé d'un compteur de référence;
