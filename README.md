@@ -3,17 +3,17 @@
 **En cours de développement**
 
 Petit cours Linux donné en vidéo au temps du confinement dans le cadre de l'ALDIL
-(Association Lyonnaise pour le Développement de l'Informatique Libre)
+(Association Lyonnaise pour le Développement de l'Informatique Libre).
 
 Pour compiler le document:
 
-* cloner le repository.
+* Cloner le repository.
 
 * Installer une distribution LaTeX (TeXLive sous Linux).
 
-* Vous avez besoin de biber.
+* Vous avez besoin de biber pour la bibliographie.
 
-Ensuite, sur une machine Linux, tapez la commande :
+Ensuite, pour compiler sur une machine Linux, tapez la commande :
 
 * ./compile.sh
 
