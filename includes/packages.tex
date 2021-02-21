@@ -1,0 +1,97 @@
+
+\section{Installation de packages fournis par la distribution}
+Dans cette section on regarde le premier cas, avec les outils des
+distributions \og Debian-like\fg{} (Debian, Ubuntu, Mint,...).
+
+Il existe des outils graphiques comme \ttt{Synaptic}, bien agréables,
+mais on s'interesse ici la ligne de commande.
+
+\subsection{La commande apt}
+C'est une version modernisée de la commande \ttt{apt-get}.
+
+Rappelons que la distribution Debian a été la première à gérer
+correctement les dépendances entre packages. De quoi s'agit t-il?
+La commande \ttt{apt show} nous le dit; exemple:
+\begin{center}
+  \com{apt show tesseract-ocr}
+\end{center}
+
+\begin{verbatim}
+Depends: libarchive13 (>= 3.2.1), libc6 (>= 2.29), libcairo2 (>=
+1.2.4), libfontconfig1 (>= 2.12.6), libgcc-s1 (>= 3.0), libglib2.0-0
+(>= 2.12.0), libicu67 (>= 67.1-1~), liblept5 (>= 1.75.3),
+libpango-1.0-0 (>= 1.37.2), libpangocairo-1.0-0 (>= 1.22.0),
+libpangoft2-1.0-0 (>= 1.14.0), libstdc++6 (>= 5.2), libtesseract4 (=
+4.1.1-2build3), tesseract-ocr-eng (>= 4.00~), tesseract-ocr-osd (>=
+4.00~) 
+\end{verbatim}
+
+Cela nous dit que le package \ttt{teseract-ocr} dépend (utilise) des
+bibliothèques (les \ttt{lib*}), mais aussi d'autres programmes (\ttt{
+  tesseract-ocr-eng} et \ttt{ tesseract-ocr-osd}). Et à
+chaque fois, la commande nous dit quel numéro de version minimal doit
+être utilisé.
+
+Donc quand on va installer un package comme 
+\ttt{teseract-ocr}, il faut que le système de gestion de packages
+installe aussi tous les packages dont il dépend. De même en cas de mises à
+jour, il faut les propager si nécessaire.
+
+\subsubsection{Principales options de la commande \ttt{apt}}
+
+\begin{itemize}
+\item \ttt{apt search}. Plusieurs possibilités:
+  \begin{itemize}
+  \item \ttt{apt search tesseract-ocr} par exemple.
+  \item \ttt{apt search ``tesseract*''} (tous les packages dont le nom
+    commence par \ttt{tesseract}; on peut mettre n'importe quelle
+    \emph{expression régulière}).
+  \end{itemize}
+\item \ttt{apt show} vu ci-dessus.
+\item \ttt{apt install}: installer un package. Exemple:
+  \begin{center}
+  \com{apt install tesseract-ocr}
+  \end{center}
+  installe le package et ses dépendances (plus exactement: les
+  dépendances d'abord, puis le package).
+\item \ttt{apt remove} et \ttt{apt purge}: supprime un package. Avec
+  l'option \ttt{purge}, la suppression est radicale: on efface tous
+    les fichiers de configuration. Attention, on ne supprime pas les
+    dépendances. Pour supprimer les dépendances, il faut utiliser la
+    commande \ttt{apt autoremove}.
+\end{itemize}
+\subsubsection{Les mises à jour}
+Il faut utiliser successivement 2 commandes:
+
+\begin{enumerate}
+\item \ttt{ apt update}: met à jour la liste des packages. On va
+  pouvoir ensuite comparer les numéros de version disponibles avec ce
+  qui est installé. Alors, la commande:
+\item   \ttt{ apt upgrade}. Met à jour ce qui doit l'être.
+\end{enumerate}
+
+Pour la  mise à jour ou l'installation de packages: les packages sont
+d'abord téléchargés (fichiers avec l'extension \ttt{.deb}), puis
+installés. La suppression des  \ttt{.deb} n'est \emph{pas
+  automatique}:
+il convient de lancer la commande \ttt{apt clean} après une
+installation ou une mise à jour.
+
+Notons aussi que dans une mise à jour il y a non seulement
+installation des nouvelles versions des packages, mais redémarrage des
+services qui y sont associés, s'il en existe. Par exemple, le démon
+\ttt{systemd} sera relancé après une mise à jour du programme (du
+fichier) \ttt{systemd}.
+
+\subsection{Faut-il rebooter la machine?}
+Oui, dans certains cas, en particulier quand le noyau a été mis à jour
+(package \ttt{linuximage}). Les interfaces graphiques l'indiquent, pas
+celles en ligne de commande.
+Après le redémarrage (car c'est seulement après le redémarrage qu'on
+va utiliser le nouveau noyau), il convient de lancer la commande 
+
+\begin{center}
+\com{apt autoremove}
+\end{center}
+
+pour supprimer l'ancienne version du noyau.

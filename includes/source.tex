@@ -1,0 +1,293 @@
+
+
+
+\section{Installer depuis la \og source \fg}
+On peut avoir besoin d'installer un programme ou une bibliothèque qui
+n'est pas disponible comme package pré-compilé dans une distribution
+(ou aussi si on veut une version plus récente que celle disponible).
+
+Il y a deux cas un peu différents:
+\begin{enumerate}
+  \item Le cas d'un programme écrit dans un langage compilé (C,
+    C++,...).
+  \item Le cas d'un programme écrit dans un langage interprété, le cas
+    emblématique étant Python.
+\end{enumerate}
+
+\emph{On regarde ici le premier cas.}
+
+Les codes source sont en général stockés dans un répertoire; ce
+répertoire contient en principe:
+\begin{itemize}
+  \item Des fragments de code (fichiers d'extensions: .h, .c, .cc
+    etc.).
+  \item Des procédures pour compiler (traduire) le code en langage
+    machine et pour l'installer dans l'arborescence de la machine.
+  \item Éventuellement de la documentation.
+  \item Des modes d'emploi pour l'installation (fichiers README,
+    INSTALL etc.)
+\end{itemize}
+
+Dans une première étape, on récupère le répertoire, qui
+contient le code source, ensuite on \emph{compile}, puis on installe
+le programme. Commençons par le processus de compilation et d'installation.
+
+\subsection{Le processus de compilation}
+C'est un processus complexe, mais on va l'automatiser.
+\subsubsection{La compilation proprement dite}
+Cela consiste à traduire chaque fragment de code (admettons que c'est
+écrit en langage C, mais peu importe\footnote{Rappelons que C est
+  \emph{le} langage de base des systèmes Unix: il a été créé pour
+  développer Unix.}) en langage machine: à partir
+du fichier, disons \ttt{toto.c}, on crée le fichier
+\ttt{toto.o}. C'est un programme, le \emph{compilateur}, qui fait ça. La
+commande \textsl{à la main} serait:
+
+\com{gcc toto.c -o toto.o}\footnote{\ttt{gcc} est le compilateur
+  standard sous Linux; sous les systèmes \emph{à la Debian}, il peut être
+  installé par la commande \ttt{apt install build-essential}. Mais il
+  existe d'autres compilateurs du langage C dans les distributions
+  Linux, comme le compilateur \ttt{clang}.}
+
+La commande \ttt{gcc} est en général accompagnée d'options pour mieux
+optimiser le code engendré, l'adapter précisément au type de cpu de
+la machine \footnote{Ce qui va probablement améliorer les
+  performances, mais rendre très probablement le code binaire non
+  portable d'une machine à l'autre.}, ou à une syntaxe particulière.
+Un exemple typique de ligne de compilation pourra être:
+
+\com{gcc -O 3 -m cpu=native toto.c -o toto.o}\footnote{Ce qui veut
+  dire: optimiser au niveau 3 (fortement), et engendrer du code pour
+  le cpu local.}
+\subsubsection{L'édition des liens}
+Une fois tous les fragments de programme traduits (compilés), il faut
+les relier entre eux, leur associer des liens vers des bibliothèques
+existantes, etc. C'est un travail assez complexe, fait par la commande
+\ttt{ld} (que l'utilisateur, même s'il développe des programme, n'a pas
+en général à connaître). Le résultat est un fichier, qui contient du
+langage machine, prêt à être exécuté\footnote{à la différence des
+  fichiers comme \ttt{toto.o} à qui il manque beaucoup de choses,
+  comme les appels de bibliothèque, pour simplifier.}. Rappelons que l'exécution de ce programme consistera
+entre autres, à  recopier ce fichier en mémoire.
+\subsubsection{Installer le programme}
+  Si tout s'est bien passé, il faut ensuite installer le programme
+  créé (il peut y en avoir plusieurs!) dans un endroit accessible
+  (dans le PATH des utilisateurs), c'est à dire copier un ou plusieurs
+  fichiers dans un répertoire (dont le nom se termine par \ttt{bin} en
+  général), et leur donner les bons droits (\ttt{x} pour tout le
+  monde).
+
+  On peut bien sûr, ensuite, se débarrasser du répertoire source.
+  \subsubsection{Un processus trop complexe, et les remèdes}
+Il faut imaginer que le code source peut être éclaté en des centaines,
+des milliers ou plus de fichiers. Un certain nombre de techniques vont
+simplifier et automatiser son installation.
+
+\begin{enumerate}
+\item La commande \ttt{make} (voir \cite{make}).
+
+  Elle lit un fichier de nom \ttt{Makefile} (par exemple) et fait... ce
+  qu'il faut, ou plutôt ce qu'on lui dit de faire.
+
+  Exemple de fichier \ttt{Makefile}:
+\begin{verbatim}
+toto.o toto.c
+    gcc toto.c -o toto.o
+tutu.o tutu.c machin.h
+    gcc tutu.c -o tutu.o
+prog: toto.o tutu.o
+    ld ...
+\end{verbatim}
+Ce qui se lit ainsi (commencer par le bas):
+\begin{itemize}
+\item Pour créer le programme \ttt{prog}, il faut auparavant créer
+  \ttt{toto.o} et \ttt{tutu.o} et effectuer la commande \ttt{ld} qu'on
+  ne détaille pas ici.
+  \item Pour obtenir le fichier binaire \ttt{toto.o}, il faut compiler
+    \ttt{toto.c} (deux premières lignes, la deuxième ligne indique ce
+    qu'il faut faire pour cela). Idem pour obtenir
+    \ttt{tutu.o}, il faut compiler \ttt{tutu.c}; ici on a une
+    seconde dépendance, à partir de \ttt{machin.h} .
+\end{itemize}
+Avantage de cette technique: si le développeur change disons
+\ttt{toto.c}, on n'a pas à recompiler \ttt{tutu.c}, mais seulement
+\ttt{toto.c}  (mais il faut
+recréer \ttt{prog} à partir des différents fichiers \ttt{*.o} (deux
+dernières lignes du fichier \ttt{Makefile})). C'est
+très important: certains projets comportent des milliers de fichiers
+source!
+\item Bien. Mais la création du fichier \ttt{Makefile} s'avère
+  rapidement cauchemardesque. Pour automatiser son écriture, on a créé
+  un ensemble de programmes, les \ttt{autotools} (voir
+  \cite{autotools}). C'est fort complexe, mais il n'est pas nécessaire
+  de les maîtriser si on n'est pas développeur\footnote{Des
+    alternatives existent, plus simple comme \ttt{cmake} (voir
+    \cite{cmake}).
+     \ttt{cmake} est développé par la société kitware, spécialiste de
+     visualisation scientifique, présente à Villeurbanne.}.
+
+  Les   \ttt{autotools} engendrent un fichier \ttt{Makefile}, à partir
+  de fichiers de configuration, réputés être simples (ça se discute),
+  et permettent aussi de tenir compte de particularités de la machine
+  et du système (suis-je sous Linux? sous Windows ? etc.).
+
+  
+\subsubsection{Concrètement, pour l'utilisateur}
+Pour compiler / installer un programme, l'utilisateur doit seulement:
+\begin{enumerate}
+  \item Lancer un ou plusieurs des \ttt{autotools}; en général, il
+    suffit de lancer:
+
+    \com{./configure}
+
+     dans le répertoire source (C'est en général documenté (fichier
+     INSTALL ou/et README) dans le répertoire source).
+
+    cette commande va engendrer le fichier \ttt{Makefile} \emph{si
+    c'est possible}. Mais peut-être que des bibliothèques, des
+      programmes vont manquer: le script \ttt{./configure} va vous le
+      dire; il faudra les installer pour aller plus loin (avec un peu de
+      chance, ce sont des packages de la distribution qui doivent être
+      installés), puis relancer
+      \ttt{./configure} (recommencer éventuellement jusqu'à ce que
+      toutes les dépendances nécessaires soient satisfaites).
+  \item Taper \ttt{make}\footnote{On peut essayer \ttt{make -j n} avec
+    pour \ttt{n} le nombre de c{\oe}urs, mais ça ne fonctionne pas
+    toujours!}
+
+    et attendre que la compilation soit terminée.
+
+    \item Si tout s'est bien passé, il faut lancer la commande
+      \com{make install} ou plutôt \com{sudo make install}.
+
+\end{enumerate}
+\end{enumerate}
+%Auparavant, il faut bien récupérer le répertoire source.
+
+\textbf{Remarque:} sous Ubuntu, il faut au moins installer les paquets
+\ttt{build-essential} et \ttt{autotools-dev} pour pouvoir compiler un
+programme. 
+
+\subsection{Récupérer le répertoire source}
+
+Deux possibilités:
+\begin{enumerate}
+\item Fichier \ttt{tar}, en général compressé.
+\item \og Repository\fg{} \ttt{git}.
+\end{enumerate}
+
+\subsubsection{La commande \ttt{tar}}
+Comment mettre un répertoire entier dans un seul fichier? Il faut
+utiliser la commande \ttt{tar}.
+
+\begin{enumerate}
+\item Pour mettre un répertoire dans un fichier, on fait:
+  
+    \com{tar cf xxx.tar répertoire}
+
+    Exemple: \com{tar cf tesseract.tar tesseract}
+
+    Tout le répertoire \ttt{tesseract} se retrouve stocké dans le
+    fichier \ttt{tesseract.tar}. 
+
+    \item L'opération inverse est:
+
+\com{tar xf xxx.tar}
+
+Exemple: \com{tar xf tesseract.tar}.
+\end{enumerate}
+
+En général, on compresse le fichier \ttt{tar} (on le crée compressé):
+
+\begin{center}
+\com{tar zcf tesseract.tar.gz tesseract}
+\end{center}
+
+et l'opération inverse est:
+
+\begin{center}
+  \com{tar zxf tesseract.tar.gz}
+\end{center}
+
+  qui extrait le répertoire contenu dans le fichier \ttt{tar}.
+
+
+Donc si on récupère un fichier \ttt{.tar.gz}, on refabrique un
+répertoire.
+
+Notons que \ttt{tar} est pratique pour échanger des répertoires
+entiers, par mail ou par tout autre moyen.
+\subsubsection{L'alternative moderne: git}
+\ttt{git} (voir \cite{git}) est outil de développeur. Il permet (entre
+autres):
+
+\begin{itemize}
+\item un développement collaboratif,
+\item une gestion fine des historiques, des versions successives, des
+  \og forks\fg.
+\end{itemize}
+Écrit par Linus Thorvald pour la maintenance du noyau Linux, il est
+devenu le standard de fait des développeurs \og libres\fg{} et
+\emph{aussi un
+moyen de distribuer les logiciels libres}. C'est un logiciel
+relativement complexe pour l'utilisation comme développeur, mais
+simple à utiliser  pour ce qui nous intéresse: installer des logiciels
+depuis leurs sources.
+
+Quelques entreprises, en particulier \ttt{github}\footnote{Racheté par
+  Microsoft...} on développé tout un système autour de
+\ttt{git}. \ttt{gitlab} propose à peu près la même chose, mais leur
+logiciel est libre.
+
+Le logiciel libre dépend \emph{très fortement} de \ttt{github}.
+
+Parmi les ajouts de \ttt{github} (et  \ttt{gitlab}) à \ttt{git}:
+
+\begin{itemize}
+  \item L'intégration continue: à chaque \emph{push} d'un contributeur
+    (envoi d'un nouveau fichier: correction ou nouveauté), on
+    peut déclencher des actions: recompilation, tests, etc.
+  \item Un Wiki par \og projet\fg.
+  \item Des outils pour que des tiers puissent proposer des
+    modifications.
+  \item Des appréciations (\emph{star}).
+  \item etc.
+\end{itemize}
+
+\subsubsection{Utiliser git pour installer du logiciel}
+
+Il faut d'abord installer \ttt{git} sur la machine:
+\begin{center}
+\com{apt install  git}
+\end{center}
+  
+sur les systèmes de type debian.
+
+Ensuite, connaissant l'url du \emph{repository}, la commande (exemple):
+
+\begin{center}
+\com{git clone
+  https://github.com/tesseract-ocr/tesseract.git}\footnote{\ttt{github}
+et \ttt{gitlab} proposent de récupérer l'url en un clic, sur la page
+web associée à chaque \emph{repository}.}
+\end{center}
+  
+clone le répertoire (ici: \ttt{tesseract}).
+
+Y a t-il eu des mises à jour depuis que j'ai cloné le répertoire? (la
+question peut se poser un certain temps si le projet est actif). La
+commande:
+\begin{center}
+\com{git pull}
+\end{center}
+
+ téléchargera les mises à jour. Il faut bien sûr recompiler le
+code, ce qui en général se fait simplement par:
+
+\com{make}
+
+et:
+
+\com{make install}\footnote{avec \ttt{sudo} ou l'équivalent devant.}
+
+La documentation est, en principe, dans le répertoire.
