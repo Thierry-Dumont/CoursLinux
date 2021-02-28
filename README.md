@@ -12,7 +12,7 @@ Pour compiler le document:
 
 * Installer une distribution LaTeX (TeXLive sous Linux) et biber
 
-Sous Ubuntu, et probablement sous toutes les distributions dérivant de Debian, il suffire pour cela de faire:
+Sous Ubuntu, et probablement sous toutes les distributions dérivant de Debian, il doit suffire pour cela de faire:
 
 `
 apt install texlive texlive-latex-extra biber
@@ -24,7 +24,7 @@ Ensuite, pour compiler sur une machine Linux, tapez la commande :
 
 * ./compile.sh
 
-(paut-être faire avant: `chmod +x compile.sh)`
+ (faire avant: `chmod +x compile.sh)`
 
 Le résultat est un fichier cours.pdf, dans le répertoire PDF/
 
