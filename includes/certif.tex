@@ -1,0 +1,272 @@
+\section{Est-ce que je communique avec le bon interlocuteur?}
+On sait donc chiffrer les communications. Mais il reste à résoudre le
+deuxième problème, à savoir s'assurer que son interlocuteur est bien
+celui voulu.
+\subsection{Le cas de \ttt{ssh} (et de ses dérivés)}
+\ttt{ssh} laisse à l'utilisateur le soin de vérifier que
+l'interlocuteur est bien le bon, mais en l'aidant pas mal.
+
+\begin{enumerate}
+\item A la première connexion sur une machine distante\footnote{Ma commande
+  est: \com{ssh dumont@math.univ-lyon1.fr}}, on reçoit ce
+  genre de message:
+
+\begin{verbatim}
+The authenticity of host 'ssh-math.univ-lyon1.fr (134.214.156.14)'
+can't be established.
+Are you sure you want to continue connecting (yes/no)? 
+\end{verbatim}
+
+Si on répond \ttt{yes}, la connexion se poursuit avec une demande de
+mot de passe, etc (rappelons que tout est crypté).
+
+Un fichier \ttt{known\_hosts} est créé (ou rallongé) dans le
+répertoire \ttt{.ssh/} de votre home directory
+pour stocker non 
+pas la clé publique du serveur, mais une \emph{empreinte numérique
+  (hash)} de cette clé et du nom du serveur (on
+va bientôt voir ce que ça veut dire).
+
+\item Aux connections suivantes, \ttt{ssh}, en consultant le fichier
+  \ttt{known\_hosts}, vérifie que rien n'a changé du coté du serveur.
+  Il vous prévient d'un grave danger si quelque chose a changé:
+  peut-être que vous dialoguez avec une machine qui n'est pas celle
+  que vous croyez\footnote{\emph{a man in the middle?}}. Il vous
+  indique quoi faire si vous voulez persister 
+  dans votre volonté de vous connecter.
+
+\end{enumerate}
+
+On voit donc que c'est l'utilisateur qui doit s'assurer de l'identité
+exacte du serveur sur lequel il se connecte. On peut quand même
+ajouter que l'utilisateur doit avoir un compte et donc un mot de passe
+sur le serveur 
+pour pouvoir achever la connexion. Évidemment, cette technique n'est
+pas adaptable à un service  web.
+
+\subsubsection{Connexion ssh par clés (sans mot de passe)}
+C'est très utile, surtout quand on veut faire des connexions
+automatisées (sauvegardes par rsync, par exemple).
+
+On est sur la machine A, et on veut se connecter par ssh sur la
+machine B.
+
+Sur A donc, on tape:
+
+\com{ssh-keygen -t  rsa} (en répondant oui, ou rien). Cela va créer
+deux fichiers dans le répertoire \ttt{.ssh/} de votre home directory
+sur A:
+
+
+\begin{itemize}
+\item \ttt{id\_rsa}: une clé privée, à ne pas divulguer.
+\item \ttt{id\_rsa.pub}: la clé publique correspondante.
+\end{itemize}
+
+Ensuite, on tape:
+
+\com{ssh-copy-id utilisateur@B}
+
+où ``utilisateur'' est votre identifiant sur la machine B.
+
+Cela va recopier la clé publique \ttt{id\_rsa.pub} dans le fichier
+\ttt{.ssh/authorized\_keys} de votre home directory, en tant
+qu'utilisateur ``utilisateur'' sur la machine B.
+
+Ensuite, vous n'aurez plus besoin de donner votre mot de passe!
+
+\subsection{Empreinte numérique \textsl{(hash)}}
+On aimerait, pour n'importe quel fichier, n'importe quelle suite de
+caractères pouvoir créer un identifiant \emph{unique}, de taille
+(nombres de signes) constante et petite.
+
+C'est évidemment impossible: l'identifiant créé étant plus petit que
+le fichier identifié, il existe forcément des fichiers différents qui
+ont le même identifiant. Toutefois on peut fabriquer une méthode qui
+tout en fournissant un résultat de petite taille (un petit nombre de
+caractères), dépend de façon très \emph{chaotique} de ce qui lui est
+donné, de sorte qu'une infime modification des données entraîne une
+profonde modification du résultat.
+
+\subsubsection{Un exemple}
+On crée un fichier \ttt{c.txt} qui contient juste la chaîne de
+caractères:
+
+\ttt{Ceci est le cours Linux de l'Aldil}
+
+J'utilise le programme \ttt{sha256} (voir \cite{sha2}) pour en
+fabriquer l'empreinte: 
+
+\begin{verbatim}
+>sha256sum c.txt
+6d366b28d175b579ebe8f65b40c4fbe5e3514c45b476bf1c70f72092f0b9e9e6  c.txt
+\end{verbatim}
+La longue chaîne de caractères produite est l'empreinte.
+
+
+
+J'ajoute un ``.'' à la fin de la ligne:
+
+\ttt{Ceci est le cours Linux de
+  l'Aldil.}
+
+
+\begin{verbatim}
+>sha256sum c.txt
+b8400e182df47650b59e332a8077f0852edbf1005984738dc7397d320edb8901 c.txt
+\end{verbatim}
+
+petite modification, grands effets.
+
+\subsubsection{Quelques méthodes}
+\begin{itemize}
+  \item \ttt{md5sum}, considéré aujourd'hui comme trop faible pour des
+    applications critiques.
+  \item La famille \ttt{sha2} (\ttt{sha224sum}, \ttt{sha256sum},
+    \ttt{sha384sum}, \ttt{sha512sum}): celle qu'il est recommandée
+    d'utiliser. La différence entre les versions tient à la longueur
+    du condensat produit et à la taille des blocs sur lesquels on
+    opère.
+    \item  La famille \ttt{sha3}: encore plus sûre que  les
+      \ttt{sha2}, mais peu utilisée à l'heure actuelle
+      (\ttt{sha384sum} est disponible sur certaines distributions).
+\end{itemize}
+\subsubsection{Comment ça marche?}
+De manière très schématique, on regarde le matériel à hacher (fichier,
+texte,...) comme une suite de bits, qu'on découpe en morceaux de
+taille fixe (quitte à compléter par du remplissage). Supposons que le
+hachage ait une taille de 256 bits (SHA-256). Alors, de manière
+simplifié (voir \cite{sha2} pour une description plus détaillé,mais
+pas forcément très claire):
+\begin{enumerate}
+\item On initialise ce qui sera le résultat final $\mathcal{H}$, un
+  bloc de 256 bits,  avec une constante
+  prédéfinies, qui fait partie de la méthode.
+\item Ensuite, pour chaque morceau $\mathcal{B}$ du fichier à hacher,
+  on applique un 
+  certain nombre de transformations qui font interagir  $\mathcal{H}$
+  et $\mathcal{B}$  pour obtenir une nouvelle version de
+  $\mathcal{H}$.
+  Les transformations sont:
+  \begin{itemize}
+  \item des ``et'' logiques (1 = vrai, 0 = faux)\footnote{vrai
+    \emph{et} faux = faux, vrai  \emph{et} vrai = vrai, faux
+    \emph{et} faux =faux.}.
+  \item des ``ou'' logiques\footnote{vrai  \emph{ou} vrai = vrai, vrai
+    \emph{ou} faux = vrai, faux \emph{ou} faux = faux.}.
+  \item des rotations appliquées aux blocs de bits\footnote{Par
+    exemple, pour une rotation à droite de n bits, les n bits qu'on
+    pousse en dehors du bloc à droite rentrent à gauche.}.
+  \item etc. A la fin, on renvoie $\mathcal{H}$.
+  \end{itemize}
+\end{enumerate}
+C'est une idée assez voisine de \emph{mélange} (mélanger de la
+peinture blanche et de la peinture noire): on veut créer un désordre
+irréversible. 
+
+    
+\subsection{Garantir l'intégrité d'un message}
+Bob envoie un message à Alice. Comment faire pour que Alice puisse
+s'assurer que le message n'a pas été modifié?
+
+On suppose que Bob possède une paire de clés (clé publique,
+clé privée) d'un algorithme de cryptographie asymétrique et que Alice
+en possède la clé publique. Alors:
+
+\begin{enumerate}
+  \item Bob calcule l'empreinte (\ttt{sha256sum} ou autre) de son
+    message.
+  \item Il crypte cette empreinte avec sa clé privée.
+  \item Il envoie le couple (message, empreinte cryptée) à Alice.
+\end{enumerate}
+
+Alice reçoit le message et l'empreinte cryptée du message. Elle va:
+\begin{enumerate}
+\item Recalculer l'empreinte du message qu'elle a reçu. Appelons
+  ``E1'' le résultat. 
+\item Décrypter l'empreinte cryptée envoyée par Bob avec la clé
+  publique de Bob, qu'elle possède. Elle obtient ``E2''.
+\item Elle compare E1 et E2. S'ils sont égaux, c'est bien que:
+  \begin{enumerate}
+  \item le   message n'a pas été modifié.
+  \item l'empreinte a bien été cryptée avec la clé privée de Bob.
+  \end{enumerate}
+\end{enumerate}
+
+Mais ça ne suffit pas à tout assurer: le point faible, c'est
+évidemment l'échange de clé: comment s'assurer que la clé publique que
+possède Alice est bien celle de Bob? Il y a plusieurs possibilités:
+\begin{enumerate}
+  \item Une rencontre entre Bob et Alice (à supposer qu'ils se
+    connaissent) pendant laquelle Bob donne sa clé publique à Alice.
+  \item Que la clé soit stockée chez un tiers de confiance.
+\end{enumerate}
+\subsection{Certificats et tiers de confiance}
+Les tiers de confiance s'appellent \emph{Autorité de
+  Certification}. Ils délivrent des \emph{certificats}.
+
+\subsubsection{Certificats} Ce sont des fichiers à la structure
+normalisée (norme X-509). Un certificat
+contient principalement:
+\begin{itemize}
+\item Un numéro de version.
+\item Un numéro de série.
+\item L'algorithme de signature du certificat.
+\item DN (Distinguished Name)\footnote{Des informations du genre \og
+  état civil\fg{}: Nom, adressse, etc.}.
+\item Validité (dates limites:  pas avant,  pas après).
+\item DN de l'objet du certificat.
+\item Informations sur la clé publique:
+  \begin{itemize}
+  \item     L'algorithme de la clé publique.
+  \item     La clé publique proprement dite.
+  \end{itemize}
+\item Et des champs optionnels.
+\end{itemize}
+
+\textbf{et} la signature des informations ci-dessus par l'autorité de
+certification: une empreinte numérique  des informations qui est
+\textbf{crypté} avec la clé \textbf{privée de l'autorité de certification.}
+
+Ensuite:
+
+\begin{enumerate}
+  \item Le certificat est conservé par le serveur (ce n'est pas
+  forcément un serveur web; d'autres services peuvent utiliser des
+  certificats, mais on peut supposer que c'est un serveur web, pour
+  simplifier). 
+  \item Le certificat est présenté au client que se connecte au
+    serveur (vous, avec votre navigateur).
+  \item Le client décrypte le condensat avec la clé publique de
+    l'autorité de certification et récupère la clé publique du serveur.
+  \item Si tout va bien, il contacte l'autorité de certification pour
+    vérifier que le certificat n'a pas été révoqué.
+\end{enumerate}
+ \textbf{Mais} d'où le client (vous) connaît il la clé publique du
+ serveur qui lui présente son certificat? \og \emph{Les navigateurs web
+ modernes intègrent nativement une liste de certificats provenant de
+ différentes Autorités de Certification choisies selon des règles
+ internes définies par les développeurs du navigateur} \fg{}: il peut
+ donc y avoir un fonctionnement en cascade, une autorité de
+ certification étant certifiée par une autre. Et bien sûr il y a un
+ moment où il faut bien faire confiance.
+
+ La révocation par une autorité est possible, par exemple en cas de
+  compromission. Remarquons aussi que les certificats ont une
+ durée de vie limitée.
+
+ Quelques  autorités de certification:
+
+ \begin{itemize}
+ \item La liste \url{https://webgate.ec.europa.eu/tl-browser/#/tl/FR}
+   montre des autorités françaises qui sont soit publiques (Caisse des dépôts
+   et consignations, Ministère de l'intérieur etc.),  soit privées,
+   certaines assiociées à des activités particulières (notaires,
+   expert-comptables etc.) d'autre vendant simplement leurs services.
+   
+ \item \ttt{Lets'Encrypt} est une autorité de certification a but non
+   lucratif: \url{https://letsencrypt.org/fr/}, financée, entre
+   autres, par des fournisseurs de services et hébergeurs comme OVH en
+   France.
+ \end{itemize}
+   

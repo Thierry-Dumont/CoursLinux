@@ -1,0 +1,199 @@
+\section{Problématique}
+ On va supposer que deux
+personnes veulent dialoguer; il est habituel de les appeler Alice et
+Bob.
+
+Pour pouvoir communiquer de manière sécurisée il faut:
+\begin{enumerate}
+  \item Crypter les messages.
+  \item S'assurer que, quand Alice écrit à Bob (et vice-versa), c'est
+    bien Bob son 
+    interlocuteur et non pas un usurpateur.
+\end{enumerate}
+
+\subsection{Comment crypter les messages?}
+Il faut:
+\begin{enumerate}
+\item Définir un système de cryptographie qu'on puisse considérer
+  comme  indéchiffrable.
+\item Utiliser ce système de façon sûre.
+  
+\item Il faut aussi que crypter et décrypter ne soit pas trop
+  \emph{coûteux} car on veut pouvoir échanger de grands messages (des
+  fichiers de grande taille, par exemple).
+\end{enumerate}
+
+Les systèmes de cryptographie sont tous basés sur deux
+  composants:
+  \begin{enumerate}
+  \item Un algorithme.
+  \item Une ou plusieurs \og clés\fg{} qui paramètrent cet algorithme.
+  \end{enumerate}
+  
+Les systèmes de cryptographie ont longtemps eu un problème au niveau
+de la clé de chiffrage/déchiffrage: 
+les systèmes classiques sont basés sur une seule clé qui sert à la
+fois au chiffrage et au déchiffrage; on parle alors de cryptographie
+symétrique. Si Alice et Bob veulent 
+discuter, cela    nécessite qu'ils  partagent la même
+clé. La partage de la clé est resté une faiblesse des meilleurs systèmes, comme
+la machine Enigma allemande pendant la deuxième guerre mondiale: la
+capture d'un sous-marin avec une valise de clés (les sous-marins
+partaient pour longtemps et, par prudence, il fallait changer de clé
+tous les jours) 
+a grandement fait avancer la décryptage d'Enigma par les spécialistes
+de Bletchley-Park. En temps de paix, jusqu'aux années 80, des
+personnels spécialisés parcouraient le monde pour transporter les
+clés, prenant moulte précautions. On verra qu'il est possible de
+partager une clé de manière sûre.
+
+\subsection{La cryptographie à clés asymétriques}
+Ça a été le bond en avant de la cryptographie. 
+\begin{enumerate}
+\item L'algorithme utilisé pour crypter les messages par Bob et Alice
+  utilise non pas une mais \emph{deux} clés différentes:  une pour
+  chiffrer un message et 
+   l'autre pour le déchiffrer.
+\item Une des deux clés ne peut pas être déduite de l'autre.
+\end{enumerate}
+
+Ainsi Bob possède  deux clés:
+\begin{itemize}
+  \item Une est la clé \emph{privée}, qu'il garde précieusement
+    cachée. C'est elle qui va servir à déchiffrer les messages.
+  \item L'autre est \emph{publique}, qu'il peut diffuser autant qu'il
+    veut sans précaution particulière.
+\end{itemize}
+La clé  \emph{privée est celle qui ne peut pas se déduire de la
+  clé publique.} 
+
+Supposons qu'Alice veuille écrire à Bob; elle le lui fait savoir par
+un message envoyé \og en clair \fg. Alors:
+\begin{itemize}
+\item Bob envoie sa clé \emph{publique}
+  à Alice;
+\item Alice se sert ce 
+  cette clé pour chiffrer le message envoyé à Bob.
+\item  Bob se sert de sa clé
+  \emph{privée} pour déchiffrer le message d'Alice.
+\end{itemize}
+
+
+
+Pour que ça marche, c'est à dire pour que ça garantisse la
+confidentialité du message envoyé par Alice, il faut absolument qu'on ne puisse
+pas \emph{déduire} la clé \emph{privée} de Bob de sa clé
+\emph{publique} (qu'il a donnée à Alice). Mais alors, la clé publique
+peut être diffusée autant qu'on veut, sans risque: elle ne sert qu'à
+crypter, et il faut la clé privée pour décrypter.
+
+  Bien sûr, dans
+l'autre sens, Alice
+renvoie sa clé  \emph{publique} à Bob, qui s'en sert pour lui écrire, etc.
+
+\subsection{Le problème de la cryptographie asymétrique}
+On verra plus loin comment on réalise  des systèmes cryptographiques
+asymétriques; mais avant,  il faut parler de leur principal défaut:
+ils sont trop 
+coûteux pour traiter de grandes quantités d'information.
+
+On contourne ce problème en n'utilisant le système à clés
+asymétriques que pour échanger secrètement LA clé d'un système de
+cryptographie symétrique: on établi une connexion avec un système de
+chiffrage asymétrique: ce système est utilisé seulement pour l'échange
+de LA clé d'un système de cryptage \emph{symétrique.}
+Remarquons que le problème du partage de la clé, qui était le point
+faible de tous les systèmes de cryptographie symétrique est
+résolu\footnote{Mais en utilisant une technologie plus sophistiquée:
+  le cryptage asymétrique!}. 
+
+On limite en général la
+\og durée de vie\fg{} de cette clé et, si nécessaire, on fabrique au
+bout d'un temps fixé une
+nouvelle clé pour de chiffrage \emph{symétrique} et on l'échange avec
+le système de cryptage asymétrique.
+
+Il faut \og seulement\fg{} que le système de cryptage
+  \emph{symétrique} soit assez robuste pour ne pas être décrypté par
+  quelqu'un qui ne possède pas la clé.
+
+%% Voilà une métaphore intéressante:
+%% \begin{itemize}
+%%   \item Bob veut écrire secrètement à Alice.
+%%   \item Bob et Alice ont chacun une boîte dont ils gardent jalousement
+%%     la clé. Ainsi, si la boîte de Bob (d'Alice) est fermée, seul Bob
+%%     (Alice) peut l'ouvrir.
+%%   \item Bob envoit sa boîte \emph{ouverte} à Alice.
+%%   \item Alice reçoit la boîte de Bob et met sa boîte ouverte dans celle de
+%%     Bob.
+%%   \item Alice ferme la boîte de Bob et lui envoit.
+%%   \item Bob a reçu sa boite; il l'ouvre --ce qu'il est seul à pouvoir
+%%     faire--; il découvre la boîte d'Alice, 
+%%     ouverte. Il met son message dans la boîte d'Alice, la ferme et
+%%     l'envoit à Alice. Alice est seule capable d'ouvrir sa boîte, et
+%%     donc seule capable d'accéder au message de Bob.
+%% \end{itemize}
+
+\section{Un exemple: ssh (Secure Shell)}
+\ttt{ssh} est à la fois un ensemble de programmes et un protocole (une
+norme) pour la communication cryptée. Dans sa version la plus
+populaire il permet une d'ouvrir un shell sur une machine lointaine:
+
+\begin{center}
+\com{ssh monLogin@machinelointaine.domaine}
+\end{center}
+
+Cette commande:
+\begin{enumerate}
+\item Ouvre une connexion cryptée asymétrique: le mot de passe est
+  donc crypté.
+\item Ensuite, on passe à une connexion cryptée, symétrique.
+\end{enumerate}
+
+D'autre commandes en dérivent, par exemple:
+
+\begin{itemize}
+\item \ttt{scp}: copie cryptée entre machines.
+\item \ttt{sftp}: comme \ttt{ftp}, mais crypté.
+\end{itemize}
+
+On peut se servir de \ttt{ssh} d'un grand nombre de manières: par
+exemple, avec \ttt{rsync} pour synchroniser des répertoires entre deux
+machines distantes (pratique pour faire des backups très
+sûrs). L'implantation de \ttt{ssh} qui tourne sous Linux est \ttt{openssh}.
+
+Sur le serveur (la machine à laquelle on se connecte), doit tourner un
+démon \ttt{sshd}. Lors de l'installation de ce logiciel, une paire de
+clés (privée, publique) propre à la machine  est engendrée\footnote{Ce
+  qui implique un tirage 
+  de nombres au hasard.}.
+
+
+\subsection{Quelques détails à propos de openssh}
+\subsubsection{Coté serveur} C'est donc le démon \ttt{sshd} qui
+tourne.
+Sa configuration est dans \ttt{/etc/ssh}:
+\begin{itemize}
+  \item Le fichier \ttt{sshd\_config} contient la configuration. Les
+    valeurs par défaut sont en général suffisantes, mais on peut par
+    exemple, changer le port (22 par défaut) et obliger l'utilisation
+    d'une connexion par clé (voir plus loin) ou interdire le login
+    \ttt{root}.
+  \item Plusieurs fichiers  dont le nom commence par \ttt{ssh\_host}
+    contiennent les clés privées et publiques (suffixe \ttt{.pub}) du
+    serveur.
+    Pourquoi plusieurs? Parce que ssh peut utiliser plusieurs
+    protocoles de cryptographie. C'est quelque chose qui se négocie
+    lors de la connexion du client.
+
+    \textbf{Important:} en cas de réinstallation du système, il est
+    recommandé de sauvegarder ces clés et de les réinstaller sur le
+    nouveau système. Sinon, on souffre quelques désagréments.
+\end{itemize}
+\subsubsection{Coté client} La configuration est dans le répertoire
+caché \ttt{.ssh/}, dans le home directory. Elle est créée lors de la
+première utilisation. On y trouve un fichier \ttt{config}.
+  A priori, il n'y a pas grand chose à y mettre, il
+  doit être vide par défaut.
+
+ 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Un Makefile n'est pas très adapté. Aurant utiliser un shell!
+#
 rm -f *.aux *.bbl *.bcf *.blg *.log *.pdf cours.run.xml *.toc *~
 lualatex cours.tex
 biber cours

@@ -12,6 +12,7 @@ pour accéder rapidement à des données. Un arbre binaire (voir figure
   c'est une \emph{feuille}.
 \end{itemize}
 
+\begin{center}
 \begin{figure}
 \begin{tikzpicture}[level distance=1.cm,
     level 1/.style={sibling distance=7cm},
@@ -52,6 +53,7 @@ child  {node{L} }
 \end{tikzpicture}
 \caption{Un arbre binaire}\label{bt1}
 \end{figure}
+\end{center}
 
  Le \emph{niveau} d'un n{\oe}ud ou d'une feuille est le nombre de branches
  qui faut parcourir pour l'atteindre +1.
@@ -81,6 +83,7 @@ de gauche issue de 50.
   n{\oe}ud. On insère la valeur quand une branche sélectionnée est vide
   (figure \ref{ibin} (\ref{t4}, \ref{t5} et \ref{t6})).
 \end{itemize}
+
 \begin{center}
 \begin{figure}[h]
   \begin{subfigure}{.225\textwidth}
@@ -170,7 +173,10 @@ plus.
 Mais combien y a-t-il de  n{\oe}uds et donc \emph{d'objets} (de nombres)
   rangés dans un 
 arbre de $n$ niveaux? On suppose que l'arbre est complet (cf. figure
-\ref{gcomplet}), c'est à dire que tous les niveaux sont complètement occupés:
+\ref{gcomplet}), c'est à dire que tous les niveaux sont complètement
+occupés:
+
+\begin{center}
 \begin{figure}
 \begin{tikzpicture}[level distance=1.cm,
     level 1/.style={sibling distance=5cm},
@@ -189,6 +195,7 @@ child  {node{.} }
 \end{tikzpicture}
 \caption{Arbre binaire complet (3 niveaux)}\label{gcomplet}
 \end{figure}
+\end{center}
 
 \begin{itemize}
 \item au niveau 1, on a: $1$  n{\oe}ud.
@@ -229,7 +236,9 @@ La recherche est \emph{très rapide}:
 \end{itemize}
 \subsection{Oui, mais...}
 Que se passe t-il quand on insère une liste ordonnée dans un arbre
-binaire? (voir la figure \ref{ordo}). 
+binaire? (voir la figure \ref{ordo}).
+
+\begin{center}
 \begin{figure}
 \begin{tikzpicture}[level distance=1.cm,
     level 1/.style={sibling distance=3cm},
@@ -250,6 +259,8 @@ child  {node{5} }
 \caption{Insertion d'une liste ordonnée}
 \label{ordo}
 \end{figure}
+\end{center}
+
 On engendre non pas un arbre binaire (toutes les branches gauches sont
 vides) mais une liste et la recherche à un coût qui n'est pas celui
 qu'on attend!
@@ -267,6 +278,8 @@ des insertions.} Reprenons comme exemple l'insertion de la liste (1, 2,
 branches, une de longueur 1 --la branche droite--, l'autre de longueur 0
 --la branche gauche--). Mais à l'insertion de (3), l'arbre n'est plus
 équilibré (voir figure \ref{ins1}).
+
+\begin{center}
 \begin{figure}
   \begin{subfigure}{.225\textwidth}
 \begin{tikzpicture}[level distance=1.cm,
@@ -311,9 +324,14 @@ child  {node{3} }
 \end{subfigure}
 \caption{Insertion successive de 1, 2, 3}\label{ins1}
 \end{figure}
+\end{center}
+
 Mais on peut rendre l'arbre équilibré par une transformation illustrée
 à la figure \ref{ins2}:
+
+
 \begin{figure}
+  \begin{center}
   \begin{subfigure}{.225\textwidth}
 \begin{tikzpicture}[level distance=1.cm,
     level 1/.style={sibling distance=3cm},
@@ -345,7 +363,9 @@ child  {node{3} }
   \end{subfigure}
   \caption{Équilibrage}
   \label{ins2}
+  \end{center}
 \end{figure}
+
 entre \ref{ins21} et \ref{ins22} on a fait remonter (2) d'un niveau,
 et du coup (1) vient à sa gauche, et l'arbre binaire est équilibré, et
 le côut d'une recherche est optimal.
