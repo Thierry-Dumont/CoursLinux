@@ -20,7 +20,7 @@ apt install texlive texlive-latex-extra biber
 
 
 
-Ensuite, pour compiler sur une machine Linux, tapez la commande :
+Ensuite, pour compiler sur une machine Linux (make n'est pas très adapté !), tapez la commande :
 
 * ./compile.sh
 
